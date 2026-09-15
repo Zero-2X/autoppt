@@ -1,5 +1,5 @@
 {
-  "schema_version": "onlyppt-migration-v1",
+  "schema_version": "autoppt-migration-v1",
   "created_at": "2026-09-15T23:30:00+08:00",
   "source_repository": "D:\\graduation project\\autoresearch2ppt",
   "source_branch": "onlyppt",

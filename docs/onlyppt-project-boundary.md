@@ -1,4 +1,4 @@
-# onlyppt 项目边界
+# autoppt 项目边界
 
 ## 保留
 
@@ -24,4 +24,3 @@
 ## 运行约束
 
 PPT 工作流可以读取用户提供的 source materials，但不得把论文制作流程作为运行前置依赖。PPT 项目的输出都放在项目目录的 `final/ppt/`，经验写入 `improvement/`，接受的 PPTX 永不被下一轮覆盖。
-
