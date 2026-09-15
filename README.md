@@ -45,7 +45,7 @@ python autosearch/scripts/run_presentation_workflow.py <topic-dir> --real --slid
 
 - `autopptskills/`：通用 PPT 技能、风格系统、ImageGen-first、可编辑重建、PowerPoint 渲染和发布门禁。
 - `autosearch/presentation/`：仅保留 PPT 所需的来源证据、画像、Slide IR、讲稿和门禁编排。
-- `autosearch/stage9_ppt/`：逐页提示词、ImageGen 交接、图片版 PPTX 组装与审计。
+- `autosearch/ppt/`：逐页提示词、ImageGen 交接、图片版 PPTX 组装与审计。
 - `skills/imagegen-to-editable-ppt/`：组件清单和 Object Router 后置重建 skill。
 - `tests/`：PPT 工作流和门禁测试。
 - `docs/`：PPT 工作流与迁移边界文档。

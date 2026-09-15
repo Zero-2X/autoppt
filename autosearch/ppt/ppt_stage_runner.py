@@ -9,7 +9,7 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from stage45_adapter import run_stage9  # noqa: E402
+from stage45_adapter import run_ppt  # noqa: E402
 
 try:
     from autosearch.presentation.profiles import presentation_profile_choices
@@ -18,12 +18,12 @@ except ImportError:  # pragma: no cover
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run AutoSearch Stage9 PPT/imagegen adapter.")
+    parser = argparse.ArgumentParser(description="Run AutoSearch PPT PPT/imagegen adapter.")
     parser.add_argument("topic_dir", help="Topic directory, such as sample/topic_xx")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--mock", action="store_true", help="Structural smoke only; never a formal deliverable.")
     mode.add_argument("--real", action="store_true", help="Consume verified built-in image_gen outputs only.")
-    parser.add_argument("--force", action="store_true", help="Rebuild Stage9 workspace.")
+    parser.add_argument("--force", action="store_true", help="Rebuild PPT workspace.")
     parser.add_argument(
         "--style-profile",
         default="",
@@ -47,7 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     mock = bool(args.mock)
-    result = run_stage9(
+    result = run_ppt(
         Path(args.topic_dir),
         mock=mock,
         force=args.force,

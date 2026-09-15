@@ -1,7 +1,7 @@
 # Presentation Orchestrator
 
 This package adds a source-grounded presentation layer around the existing
-Stage9/Stage4.5 pipeline. It does not replace the ImageGen runner or the
+PPT/Stage4.5 pipeline. It does not replace the ImageGen runner or the
 PowerPoint builders.
 
 The stable route is:
@@ -39,7 +39,7 @@ page range, duration defaults, and no-animation behavior.
 
 ## Package artifacts
 
-The Stage9 adapter writes these under `final/ppt/`:
+The PPT adapter writes these under `final/ppt/`:
 
 ```text
 presentation_profile.json
@@ -73,7 +73,7 @@ remain available under their original paths.
 
 ## Local recovery
 
-`regenerate_stage9_slide()` regenerates one slide asset and writes a
+`regenerate_ppt_slide()` regenerates one slide asset and writes a
 `single_slide_regeneration_manifest.json`. It preserves the accepted deck and
 marks that a reviewed merge/release round is still required.
 

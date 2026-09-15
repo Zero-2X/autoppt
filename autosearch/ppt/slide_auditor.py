@@ -10,13 +10,15 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def audit_stage9(
+def audit_ppt(
     *,
     image_prompts: dict[str, Any],
     image_dir: Path,
     pptx_path: Path,
     mock: bool,
     asset_manifest_path: Path | None = None,
+    slide_range: tuple[int, int] = (8, 12),
+    presentation_profile: str = "innovation_competition_defense",
 ) -> dict[str, Any]:
     slides = image_prompts.get("slides", [])
     issues: list[str] = []
@@ -96,7 +98,9 @@ def audit_stage9(
         "warnings": ["mock images prove pipeline structure, not final visual quality"] if mock else [],
         "presentation_gate": {
             "judge_facing": True,
-            "slide_count_8_to_12": 8 <= len(slides) <= 12,
+            "slide_count_8_to_12": slide_range[0] <= len(slides) <= slide_range[1],
+            "slide_count_range": list(slide_range),
+            "presentation_profile": presentation_profile,
             "has_prompt_per_slide": all(bool(s.get("prompt_zh") or s.get("prompt_en")) for s in slides),
             "has_evidence_refs_per_slide": all(bool(s.get("evidence_refs", [])) for s in slides),
             "no_placeholder_detected": not issues,

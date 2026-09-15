@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run or resume the profile-aware Stage9 presentation workflow.
+"""Run or resume the profile-aware PPT presentation workflow.
 
 This is a thin CLI over the existing Stage4.5 adapter. It intentionally keeps
 the old adapter as the owner of ImageGen and PPTX assembly.
@@ -17,7 +17,7 @@ if str(ROOT) not in sys.path:
 
 from autosearch.presentation.orchestrator import build_defense_materials, prepare_presentation_package, run_presentation_gates
 from autosearch.presentation.profiles import get_presentation_profile, presentation_profile_choices
-from autosearch.stage9_ppt.stage45_adapter import regenerate_stage9_slide, run_stage9
+from autosearch.ppt.stage45_adapter import regenerate_ppt_slide, run_ppt
 
 
 def _quality_pptx(topic_dir: Path, explicit: str = "", result: dict | None = None) -> Path | None:
@@ -166,7 +166,7 @@ def main() -> int:
     if not args.mock and not args.real:
         raise SystemExit("Choose exactly one generation mode: --real (built-in image_gen only) or --mock (structural smoke only).")
     if args.slide_id:
-        result = regenerate_stage9_slide(
+        result = regenerate_ppt_slide(
             topic_dir,
             args.slide_id,
             mock=not args.real,
@@ -175,7 +175,7 @@ def main() -> int:
             imagegen_route=args.imagegen_route or None,
         )
     else:
-        result = run_stage9(
+        result = run_ppt(
             topic_dir,
             mock=not args.real,
             force=args.force,

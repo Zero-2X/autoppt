@@ -222,7 +222,7 @@ def build_image_prompts(
         raise ValueError("slide_brief.json contains no slides.")
     slides = raw_slides[:slide_count_max]
     if len(slides) < slide_count_min:
-        raise ValueError(f"Stage9 requires at least {slide_count_min} slides; got {len(slides)}.")
+        raise ValueError(f"PPT requires at least {slide_count_min} slides; got {len(slides)}.")
 
     evidence_items = normalize_evidence_items(evidence_ledgers or [])
     style = get_style_profile(style_profile)

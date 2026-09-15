@@ -3,12 +3,12 @@
   "created_at": "2026-09-15T23:30:00+08:00",
   "source_repository": "D:\\graduation project\\autoresearch2ppt",
   "source_branch": "onlyppt",
-  "destination": "D:\\onlyppt",
+  "destination": "D:\\autoppt",
   "mode": "copy-out; source repository preserved",
   "included": [
     "autopptskills/",
     "autosearch/presentation/",
-    "autosearch/stage9_ppt/",
+    "autosearch/ppt/",
     "autosearch/scripts/run_presentation_workflow.py",
     "autosearch/scripts/iterate_presentation_quality.py",
     "skills/imagegen-to-editable-ppt/",
@@ -27,6 +27,6 @@
     "ledger": "improvement/ppt-improvement-ledger.jsonl",
     "handbook": "improvement/style-handbook.md",
     "recorder": "scripts/update_ppt_knowledge.py",
-    "prompt_injection": "autosearch/stage9_ppt/image_prompt_builder.py"
+    "prompt_injection": "autosearch/ppt/image_prompt_builder.py"
   }
 }

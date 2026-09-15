@@ -4,7 +4,7 @@ from datetime import date
 import unittest
 
 from autopptskills.scripts.build_imagegen_prompt_manifest import build
-from autopptskills.scripts.stage9_ppt.image_prompt_builder import build_image_prompts
+from autopptskills.scripts.ppt.image_prompt_builder import build_image_prompts
 from autopptskills.scripts.style_contracts import (
     FORBIDDEN_INSTITUTIONAL_IDENTITY_ELEMENTS,
     OFFICIAL_REFERENCE_SOURCES,
@@ -284,7 +284,7 @@ class StyleContractsTest(unittest.TestCase):
             prompts["slides"][1]["prompt_zh"],
         )
 
-        stage9 = build_image_prompts(
+        ppt = build_image_prompts(
             project_name="Verified thesis defense",
             slide_brief={
                 "slides": [
@@ -303,8 +303,8 @@ class StyleContractsTest(unittest.TestCase):
             style_profile="engineering_institutional_blue",
             verified_identity_text=identity_text,
         )
-        self.assertEqual(stage9["style_reference"]["verified_identity_text"], [identity_text])
-        self.assertIn("ordinary on-slide text", stage9["slides"][0]["prompt_zh"])
+        self.assertEqual(ppt["style_reference"]["verified_identity_text"], [identity_text])
+        self.assertIn("ordinary on-slide text", ppt["slides"][0]["prompt_zh"])
 
     def test_identity_like_cover_text_requires_explicit_verification(self) -> None:
         plan = {
@@ -328,8 +328,8 @@ class StyleContractsTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "must be explicitly source-verified"):
             build(plan)
 
-    def test_non_official_stage9_profile_remains_compatible(self) -> None:
-        stage9 = build_image_prompts(
+    def test_non_official_ppt_profile_remains_compatible(self) -> None:
+        ppt = build_image_prompts(
             project_name="General academic report",
             slide_brief={
                 "slides": [
@@ -347,9 +347,9 @@ class StyleContractsTest(unittest.TestCase):
             slide_count_max=1,
             style_profile="academic_light",
         )
-        self.assertFalse(stage9["style_reference"]["official_source_inspired"])
-        self.assertNotIn("official_source_inspired_only", stage9["prompt_policy"])
-        self.assertNotIn("Official-Source Reference Boundary:", stage9["slides"][0]["prompt_zh"])
+        self.assertFalse(ppt["style_reference"]["official_source_inspired"])
+        self.assertNotIn("official_source_inspired_only", ppt["prompt_policy"])
+        self.assertNotIn("Official-Source Reference Boundary:", ppt["slides"][0]["prompt_zh"])
 
     def test_prompt_contract_guards_against_spectacle_and_underdesign(self) -> None:
         plan = {
@@ -407,7 +407,7 @@ class StyleContractsTest(unittest.TestCase):
         self.assertIn("not an official template", prompts["slides"][0]["prompt_zh"])
         self.assertIn("Do not show or imitate any university emblem", prompts["slides"][0]["prompt_zh"])
 
-        stage9 = build_image_prompts(
+        ppt = build_image_prompts(
             project_name="Thesis project",
             slide_brief={
                 "slides": [
@@ -425,11 +425,11 @@ class StyleContractsTest(unittest.TestCase):
             slide_count_max=1,
             style_profile="graduate_defense_navy",
         )
-        self.assertTrue(stage9["style_reference"]["official_source_inspired"])
-        self.assertTrue(stage9["prompt_policy"]["forbid_institutional_identity_elements"])
-        self.assertEqual(stage9["slides"][0]["style_reference"], stage9["style_reference"])
-        self.assertIn("Official-Source Reference Boundary:", stage9["slides"][0]["prompt_zh"])
-        self.assertNotIn("西安交通大学管理学院", stage9["slides"][0]["prompt_zh"])
+        self.assertTrue(ppt["style_reference"]["official_source_inspired"])
+        self.assertTrue(ppt["prompt_policy"]["forbid_institutional_identity_elements"])
+        self.assertEqual(ppt["slides"][0]["style_reference"], ppt["style_reference"])
+        self.assertIn("Official-Source Reference Boundary:", ppt["slides"][0]["prompt_zh"])
+        self.assertNotIn("西安交通大学管理学院", ppt["slides"][0]["prompt_zh"])
 
 
 if __name__ == "__main__":

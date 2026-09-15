@@ -28,7 +28,7 @@ must consume the existing Slide Manifest and verified ImageGen master. The
 migration; it must not become a second presentation workflow.
 
 Use this skill for the repository's highest-quality presentation workflow. It
-combines the local Stage4.5/Stage9 pipeline with the useful reconstruction ideas
+combines the local Stage4.5/PPT pipeline with the useful reconstruction ideas
 adapted from `https://github.com/GordenSun/GordenSuperPPTSkills`.
 
 ## Non-negotiable production chain
@@ -64,7 +64,7 @@ or any other substitute.
 
 The agent must automatically make one built-in `image_gen` call per pending
 slide and then ingest its completed `ig_...` result through
-`autosearch/stage9_ppt/builtin_imagegen_handoff.py`. Repository scripts only
+`autosearch/ppt/builtin_imagegen_handoff.py`. Repository scripts only
 prepare the queue, materialize the tool result, and verify the handoff.
 
 Scripts may prepare prompts, invoke ImageGen, assemble already-generated pages,
@@ -279,7 +279,7 @@ themselves.
   generic defense and review archetypes.
 - `references/production-lessons.md`: distilled lessons and anti-patterns from
   prior image-only, multi-style, and multi-round editable decks.
-- `references/project-integration.md`: Stage4.5/Stage9 repository integration.
+- `references/project-integration.md`: Stage4.5/PPT repository integration.
 - `references/imagegen-full-slide.md`: prompt-per-slide ImageGen production.
 - `references/image-to-editable-pptx.md`: reconstruction procedure and schemas.
 - `references/method-selection.md`: OCR/vector/raster/native routing.

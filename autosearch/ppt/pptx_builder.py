@@ -41,7 +41,7 @@ def build_deck_spec(stage45_dir: Path, image_prompts: dict[str, Any]) -> Path:
             "presentation_profile": image_prompts.get("presentation_profile", "innovation_competition_defense"),
             "imagegen_route": image_prompts.get("imagegen_route", "fullpage_imagegen_reconstruct"),
             "slide_contract_schema": image_prompts.get("slide_contract_schema", "slide-ir-v1"),
-            "assembly_note": "AutoSearch Stage9 adapter; full-slide image assembly.",
+            "assembly_note": "AutoSearch PPT adapter; full-slide image assembly.",
         },
         "slides": slides,
     }

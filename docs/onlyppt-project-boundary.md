@@ -6,7 +6,7 @@
 
 - `autopptskills/`
 - `autosearch/presentation/`
-- `autosearch/stage9_ppt/`
+- `autosearch/ppt/`
 - `autosearch/scripts/run_presentation_workflow.py`
 - `autosearch/scripts/iterate_presentation_quality.py`
 - `skills/imagegen-to-editable-ppt/`

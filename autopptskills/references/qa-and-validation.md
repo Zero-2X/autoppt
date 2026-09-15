@@ -96,9 +96,9 @@ records. Its static report can validate deck/top-level/per-slide contract
 consistency, but every page still requires fresh ImageGen generation before a
 real ImageGen-first pass is possible.
 
-## Stage9 Audit Gate
+## PPT Audit Gate
 
-When using the copied Stage9 adapter, inspect:
+When using the copied PPT adapter, inspect:
 
 ```text
 final/ppt/imagegen_prompts.json

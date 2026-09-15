@@ -34,7 +34,7 @@ Do not use `build_competition_ppt.py`, `compose_*pptx.py`, PIL, SVG, HTML, Canva
 
 ## Preferred Project Routes
 
-### Existing Stage9 topic workspace
+### Existing PPT topic workspace
 
 Use this when a topic folder already has Stage8 handoff materials:
 
@@ -50,7 +50,7 @@ topic_.../
 Run the copied adapter from this skill or the repository source:
 
 ```powershell
-python autopptskills\scripts\stage9_ppt\ppt_stage_runner.py <topic_dir> --mock --style-profile academic_light
+python autopptskills\scripts\ppt\ppt_stage_runner.py <topic_dir> --mock --style-profile academic_light
 ```
 
 Use `--mock` only for structural verification. Real visual completion requires

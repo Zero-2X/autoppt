@@ -38,7 +38,7 @@ def build_deck_spec(stage45_dir: Path, image_prompts: dict[str, Any]) -> Path:
             "title": image_prompts.get("deck_title", "Competition deck"),
             "output_mode": "imagegen_full_slide",
             "generation_mode": "direct_final_slide_imagegen",
-            "assembly_note": "AutoSearch Stage9 adapter; full-slide image assembly.",
+            "assembly_note": "AutoSearch PPT adapter; full-slide image assembly.",
         },
         "slides": slides,
     }

@@ -450,7 +450,7 @@ def prepare_presentation_package(
         )
     # Mirror the canonical planning/evidence artifacts at project root because
     # the long-lived project contract names them there. The final/ppt copies
-    # remain the Stage9 handoff location and are the source of truth for runs.
+    # remain the PPT handoff location and are the source of truth for runs.
     for key in (
         "evidence_ledger", "paper_analysis", "requirement_matrix", "source_manifest",
         "figure_source_manifest", "deck_plan", "deck_plan_md", "slide_ir", "design_spec_md", "spec_lock_md", "source_map",

@@ -288,7 +288,7 @@ def write_builtin_blocker_report(
             for slide in slides
         ],
         "next_action": "Invoke the built-in image_gen tool for each slide, save each PNG and matching sidecar, then rerun Stage45.",
-        "resume_entrypoint": "autopptskills/scripts/stage9_ppt/ppt_stage_runner.py <topic_dir> --real",
+        "resume_entrypoint": "autopptskills/scripts/ppt/ppt_stage_runner.py <topic_dir> --real",
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return path
