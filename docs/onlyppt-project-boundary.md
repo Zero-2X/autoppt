@@ -1,8 +1,9 @@
-# autoppt 项目边界
+# autoppt project boundary
 
-## 保留
+## Retained scope
 
-本项目只保留生成、重建、审计和发布 PPT 所需的代码：
+This project retains only the code needed to generate, reconstruct, audit, and
+release PPT presentations:
 
 - `autopptskills/`
 - `autosearch/presentation/`
@@ -10,17 +11,20 @@
 - `autosearch/scripts/run_presentation_workflow.py`
 - `autosearch/scripts/iterate_presentation_quality.py`
 - `skills/imagegen-to-editable-ppt/`
-- PPT 相关测试、文档与环境配置
+- PPT-related tests, documentation, and environment configuration
 
-## 排除
+## Excluded scope
 
-不迁移以下内容：
+The following are intentionally excluded:
 
-- `autosearch/research/`、`autosearch/llm/`、研究/实验/论文 prompts 与 templates
-- `sample/`、`outputs/`、`runs/`、`workspaces/`、`tmp/`、缓存和 Office 临时目录
-- 论文写作、投稿、评审、实验执行和研究课题管理代码
-- 项目特定的一次性脚本与历史 deck 产物
+- `autosearch/research/`, `autosearch/llm/`, research/experiment/paper prompts and templates
+- `sample/`, `outputs/`, `runs/`, `workspaces/`, `tmp/`, caches, and Office temporary directories
+- Paper writing, submission, review, experiment execution, and research-management code
+- Project-specific one-off scripts and historical deck artifacts
 
-## 运行约束
+## Runtime boundary
 
-PPT 工作流可以读取用户提供的 source materials，但不得把论文制作流程作为运行前置依赖。PPT 项目的输出都放在项目目录的 `final/ppt/`，经验写入 `improvement/`，接受的 PPTX 永不被下一轮覆盖。
+The PPT workflow may read user-provided source materials, but it must not make
+paper production a runtime prerequisite. Presentation outputs belong under the
+project's `final/ppt/` directory. Reusable lessons belong in `improvement/`.
+An accepted PPTX is immutable and must never be overwritten by a later round.

@@ -84,14 +84,14 @@ def collect(project_dir: Path) -> dict[str, Any]:
     profile = str(run_manifest.get("presentation_profile") or audit.get("presentation_profile") or "")
     style = str(run_manifest.get("style_profile") or "")
     rules = [
-        "保留 accepted PPTX，不覆盖既有基线；每轮输出新 round。",
-        "普通文字走 native text；复杂图形只有在 PowerPoint 复核通过后才接受 SVG。",
-        "逐页视觉复核独立于结构化分数，不能用自动门禁替代人工 sign-off。",
+        "Keep the accepted PPTX immutable; write every iteration to a new round.",
+        "Route normal text to native text; accept complex SVG only after PowerPoint visual review.",
+        "Keep full-size visual review independent from structural scores; automated gates cannot replace sign-off.",
     ]
     if dedup_failures:
-        rules.append("本轮存在 gate failure：先修复并记录根因，再进入下一轮，禁止把 blocker 当作完成。")
+        rules.append("This round has gate failures: repair and record the root cause before the next round; never treat a blocker as completion.")
     if reconstruction:
-        rules.append("矢量化结果必须记录 source_bbox/layout_bbox、拒绝原因和 raster fallback。")
+        rules.append("Every vectorization decision must record source_bbox/layout_bbox, the rejection reason, and any raster fallback.")
     return {
         "schema_version": "ppt-improvement-ledger-v1",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -116,16 +116,16 @@ def collect(project_dir: Path) -> dict[str, Any]:
 
 def append_markdown(path: Path, record: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    failures = record.get("failures") or ["无自动门禁失败；仍需人工逐页视觉复核"]
-    warnings = record.get("warnings") or ["无自动门禁 warning"]
+    failures = record.get("failures") or ["No automated gate failure; full-size slide review is still required."]
+    warnings = record.get("warnings") or ["No automated gate warning."]
     lines = [
         f"\n## {record['timestamp']} · {Path(record['project']).name}",
-        f"- 状态：`{record['status']}`；profile：`{record.get('presentation_profile') or '未记录'}`；style：`{record.get('style_profile') or '未记录'}`",
-        f"- 页数：`{record.get('slide_count') or '未记录'}`；质量迭代：`{record.get('quality_iteration') or '未运行'}`",
-        "- 失败点：" + "；".join(f"`{item}`" for item in failures),
-        "- 警告：" + "；".join(f"`{item}`" for item in warnings),
-        "- 本轮必须保留的规则：" + "；".join(record.get("learned_rules", [])),
-        "- 验证证据：" + str(record.get("evidence", {})),
+        f"- Status: `{record['status']}`; presentation profile: `{record.get('presentation_profile') or 'unrecorded'}`; style: `{record.get('style_profile') or 'unrecorded'}`",
+        f"- Slides: `{record.get('slide_count') or 'unrecorded'}`; quality iteration: `{record.get('quality_iteration') or 'not run'}`",
+        "- Failures: " + "; ".join(f"`{item}`" for item in failures),
+        "- Warnings: " + "; ".join(f"`{item}`" for item in warnings),
+        "- Rules to retain: " + "; ".join(record.get("learned_rules", [])),
+        "- Evidence: " + str(record.get("evidence", {})),
     ]
     with path.open("a", encoding="utf-8") as handle:
         handle.write("\n".join(lines) + "\n")

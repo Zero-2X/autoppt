@@ -1,17 +1,19 @@
-# 运行环境
+# Runtime environment
 
-建议在 Windows + Microsoft PowerPoint 环境运行正式质量门禁；没有 PowerPoint COM 导出时，Gold release 必须保持 blocked。
+Run formal quality gates on Windows with Microsoft PowerPoint when possible.
+Without PowerPoint COM export, the Gold release must remain `blocked`.
 
 ```powershell
-cd D:\onlyppt
+cd <path-to-autoppt>
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 ```
 
-也可以使用 `environment.yml` / `environment.lock.yml` 创建 Conda 环境。Node.js/PptxGenJS 用于部分 editable composer；正式运行前执行：
+You may also create a Conda environment from `environment.yml` or
+`environment.lock.yml`. Node.js/PptxGenJS are used by some editable composers.
+Before a formal run, check the available backends:
 
 ```powershell
 python autopptskills/scripts/check_editable_backends.py --json-out .codex-tmp/method-capabilities.json
 ```
-

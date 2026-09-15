@@ -1,9 +1,9 @@
 {
   "schema_version": "autoppt-migration-v1",
   "created_at": "2026-09-15T23:30:00+08:00",
-  "source_repository": "D:\\graduation project\\autoresearch2ppt",
+  "source_repository": "autoresearch2ppt (historical source; local path not required)",
   "source_branch": "onlyppt",
-  "destination": "D:\\autoppt",
+  "destination": ".",
   "mode": "copy-out; source repository preserved",
   "included": [
     "autopptskills/",

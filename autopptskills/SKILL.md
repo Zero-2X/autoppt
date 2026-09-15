@@ -1,306 +1,281 @@
 ---
 name: autopptskills
-description: Build and audit source-grounded ImageGen-first PowerPoint decks, then reconstruct them into visually faithful editable PPTX files with continuous backgrounds, semantic object layers, real PowerPoint rendering, and release evidence. Use for academic reports, competition defenses, project presentations, thesis defenses, full-slide image decks, and image-to-editable PPTX work. Do not replace ImageGen with script-drawn first-stage slides or claim raster artwork is path-editable.
+description: Create, reconstruct, audit, and release source-grounded PowerPoint decks through an ImageGen-first workflow. Use for academic, project, research, competition, or thesis presentations, image-only decks, and image-to-editable PPTX work that requires semantic layers and real PowerPoint QA. Do not use it to replace built-in ImageGen with script-drawn first-stage slides or to describe raster assets as native or path-editable.
 ---
 
-# Auto PPT Skills
+# AutoPPTSkills
 
-## Migration boundary: only the editable reconstruction layer changes
+Produce a presentation whose claims are traceable, whose visual master is
+generated slide by slide with built-in ImageGen, whose editable version has
+honest semantic layers, and whose exact final PPTX has passed real PowerPoint
+rendering and explicit all-slide review.
 
-This repository is the standalone onlyppt workflow. The migration from
-img2pptx is deliberately limited to the post-ImageGen semantic decomposition
-and editable reconstruction stages:
+This file is the reusable operating contract. Load detailed references only for
+the route being executed.
+
+## Definition of done
+
+A run is complete only when the requested delivery tier is proven:
+
+| Delivery tier | Required proof |
+| --- | --- |
+| Planning package | Reviewed evidence map, outline, Slide Manifest, exact-text/numeric whitelist, style contract, and one self-contained prompt per slide |
+| Image-only deck | Planning proof plus verified built-in ImageGen provenance, complete slide images, image-only PPTX, and visual review |
+| Editable draft | Verified visual masters plus Component Manifest, routed objects, continuous backgrounds, native text/simple geometry, bounded assets, and structural QA |
+| Gold editable release | Editable draft proof plus exact-text pass, layer-contract pass, official overflow pass, exact final-PPTX PowerPoint export, every-slide comparisons, full-size visual sign-off, and aggregate release pass |
+
+Do not claim a higher tier from lower-tier evidence. A mock run proves only
+structural plumbing. Missing built-in ImageGen, Microsoft PowerPoint rendering,
+or required visual review makes the relevant tier `blocked`, not `pass`.
+
+## Decision precedence
+
+When goals conflict, preserve this order:
+
+1. Source, factual, numeric, and formula truth.
+2. Quality of the accepted ImageGen visual master.
+3. Fidelity of the exact final Microsoft PowerPoint render.
+4. Audience readability and profile-appropriate design completion.
+5. Semantic editability of normal text and simple geometry.
+6. Path-level vector depth.
+
+Never reduce fidelity merely to increase the nominal vector count.
+
+## Canonical workflow
 
 ```text
-source understanding -> storyline -> slide spec -> design system ->
-full-page built-in ImageGen -> image QA -> PPTX assembly
-                                      [unchanged onlyppt stages]
-                                      -> img2pptx-derived component manifest
-                                      -> native text/shape/SVG/raster routing
-                                      -> PowerPoint render/diff/QA
+0. inspect sources, workspace, tools, and prior accepted rounds
+-> 1. build evidence map, Slide Manifest, exact-text and numeric whitelist
+-> 2. lock narrative, page archetypes, style profile, and slide prompts
+-> 3. generate one complete built-in ImageGen master per slide
+-> 4. assemble image-only PPTX and verify current-image provenance
+-> 5. decompose verified masters and route semantic objects
+-> 6. compose editable PPTX with one continuous clean background per slide
+-> 7. run structural, text, layer, overflow, PowerPoint, and visual gates
+-> 8. release an immutable accepted round and capture reusable lessons
 ```
 
-Do not replace or rewrite the existing source-grounding, narrative, style,
-prompt, full-slide ImageGen, image-only assembly, or deck-level QA stages when
-adding reconstruction features. New reconstruction code must be additive and
-must consume the existing Slide Manifest and verified ImageGen master. The
-`skills/imagegen-to-editable-ppt/` skill is the explicit boundary for this
-migration; it must not become a second presentation workflow.
-
-Use this skill for the repository's highest-quality presentation workflow. It
-combines the local Stage4.5/PPT pipeline with the useful reconstruction ideas
-adapted from `https://github.com/GordenSun/GordenSuperPPTSkills`.
-
-## Non-negotiable production chain
-
-```text
-source evidence
--> outline, slide scripts, exact-text and numeric whitelist
--> one self-contained prompt per slide
--> ImageGen complete final slide images
--> image-only PPTX
--> ImageGen-first provenance gate
--> semantic editable reconstruction
--> real Microsoft PowerPoint render
--> all-slide visual review
--> gold release gate
-```
-
-### Built-in ImageGen hard rule
-
-Every presentation image in this workflow must be generated by Codex's
-built-in `image_gen` capability. The presentation path must never read or use
-`OPENAI_API_KEY`, an OpenAI-compatible endpoint, a proxy, a provider SDK, a
-local ImageGen command, or another image-generation service. Environment
-variables such as `STAGE45_IMAGEGEN_CLI` and `LOCAL_IMAGEGEN_COMMAND` are
-forbidden on this path, even when they appear to be available.
-
-Mock images are allowed only for structural regression tests and must remain
-marked as mock; they are not a real-generation fallback. If the built-in
-ImageGen call is blocked, preserve the prompt/spec/manifest package, record the
-exact blocker, and repair or retry the built-in route. Do not silently switch
-to an API-key route, local renderer, raster placeholder, SVG/HTML/PIL drawing,
-or any other substitute.
-
-The agent must automatically make one built-in `image_gen` call per pending
-slide and then ingest its completed `ig_...` result through
-`autosearch/ppt/builtin_imagegen_handoff.py`. Repository scripts only
-prepare the queue, materialize the tool result, and verify the handoff.
-
-Scripts may prepare prompts, invoke ImageGen, assemble already-generated pages,
-reconstruct editable objects, and run QA. They must not draw first-stage final
-slide pages with PIL, SVG, HTML, Canvas, matplotlib, or PowerPoint shapes. If
-ImageGen is unavailable, preserve the prepared prompt/spec package and report
-the blocker instead of manufacturing a substitute deck.
+A later blocking stage may not repair or excuse a failed earlier gate.
 
 ## Route the request
 
-1. Source document to project/competition/research deck: read
-   `references/project-integration.md` and `references/imagegen-full-slide.md`.
-2. Existing slide images to editable PPTX: read
-   `references/image-to-editable-pptx.md` and `references/method-selection.md`.
-   A non-ImageGen screenshot must first be recreated as a verified ImageGen
-   full-slide master for a gold deliverable.
-3. High-fidelity or final delivery: also read
-   `references/workflow-architecture.md`, `references/harness-engineering.md`,
-   `references/production-lessons.md`, `references/history-and-decisions.md`,
-   and `references/qa-and-validation.md`.
-4. Existing run inspection only: read `references/qa-and-validation.md`; do not
-   mutate the deck unless the user also asks for changes.
-5. Style selection, multi-style generation, an overly decorative result, or a
-   clean-but-under-designed result: read `references/style-system.md` before
-   writing or revising prompts.
-6. Changing this skill or its global rules: read
-   `references/history-and-decisions.md`; do not universalize one slide-specific
-   repair.
+| Request | Read before acting | Expected stopping point |
+| --- | --- | --- |
+| Source documents to a new deck | `references/project-integration.md`, `references/imagegen-full-slide.md`, `references/style-system.md` | Planning, image-only, or Gold tier requested by the user |
+| Existing slide images to editable PPTX | `references/image-to-editable-pptx.md`, `references/method-selection.md` | Editable draft or Gold tier |
+| High-fidelity/final delivery | Also read `references/workflow-architecture.md`, `references/harness-engineering.md`, `references/production-lessons.md`, and `references/qa-and-validation.md` | Gold tier only after every required gate passes |
+| Inspect an existing run | `references/qa-and-validation.md` | Evidence-backed report; do not mutate unless asked |
+| Select or repair visual style | `references/style-system.md`; for official-source-inspired patterns also read `references/official-source-archetypes.md` | Reviewed style contract and affected-slide regeneration plan |
+| Change this skill or its global rules | `references/history-and-decisions.md` | A portable validated skill; do not universalize one slide-specific repair |
 
-## Default visual direction
+A non-ImageGen screenshot may be analyzed as a reference, but a new Gold
+deliverable must first recreate it as a verified built-in ImageGen master.
 
-- Default to `academic_light`: polished white/light paper, low-saturation navy
-  and teal, one restrained accent, strong CJK hierarchy, content-specific
-  evidence graphics, and varied page silhouettes.
-- Available stable profiles are `academic_light`, `academic_minimal`,
-  `deep_academic`, `editorial_warm`, `engineering_blueprint`, and
-  `clinical_clean`. Choose by audience and evidence type, not novelty. Read
-  `references/style-system.md`.
-- Official-source-inspired generic archetypes are `graduate_defense_navy`,
-  `institutional_purple_light`, `engineering_institutional_blue`,
-  `science_dark_contrast`, and `nsfc_review_light`. Read
-  `references/official-source-archetypes.md`; never present them as official
-  templates or reuse university/NSFC identity assets.
-- For a source-verified defense-cover university line, list the complete string
-  in both `exact_text` and `verified_identity_text` or
-  `allowed_identity_text`. This permits ordinary text only, never an emblem,
-  branded master, campus image, or endorsement claim.
-- Restraint removes meaningless effects; it does not force universal
-  minimalism. `academic_minimal` is the only intentionally low-density
-  profile. Every non-minimal page needs a primary evidence anchor, clear reading
-  path, deliberate scale contrast, domain-specific visual language, and enough
-  secondary detail to feel complete.
-- Give each slide one clear conclusion; make the title state that conclusion
-  when possible. Prefer visual evidence with direct annotation over prose.
-- Prefer one dominant composition over dashboard/card-grid repetition.
-- Reject neon, cyberpunk, dramatic 3D, lens flare, glassmorphism, giant hero
-  backgrounds, dense wallpaper, fake logos, fake awards, and invented metrics.
-- Also reject unfinished title-plus-bullet pages, generic icon/card scaffolds,
-  timid scale, accidental whitespace, and non-minimal pages without a visual
-  argument.
-- Keep visible text short. Regenerate an ImageGen page when Chinese text is
-  malformed; do not patch first-stage pages with local overlays.
+## Stage contracts
 
-## Editable reconstruction contract
+### 0. Preflight and run identity
 
-The img2pptx-derived semantic bridge is implemented as
-`component-manifest-v1`. `reconstruct_imagegen_slide.py` emits it next to the
-legacy `deck.json`; use `--slide-manifest` whenever reviewed source text is
-available. Validate the bridge before composing or releasing:
+- Inspect current files, accepted rounds, manifests, and delivery target before
+  generating anything.
+- Give each run an isolated directory. Treat accepted rounds as immutable.
+- Check built-in ImageGen readiness before a long batch. Check OCR,
+  Node/PptxGenJS, vector tools, disk space, and Microsoft PowerPoint before
+  editable reconstruction.
+- On Windows, direct `TEMP` and `TMP` to a task-local directory on a drive with
+  adequate space when Office rendering is involved.
 
-```powershell
-python autopptskills\scripts\component_manifest_qa.py \
-  <run-dir>\component_manifest.json \
-  --json-out <run-dir>\qa\component-manifest-qa.json
-```
+### 1. Content truth
 
-The manifest records normalized bboxes, `content_id`, `render_type`, z-order,
-confidence, editability, and provenance. It is an intermediate routing
-contract, not a license to flatten the page into one SVG or screenshot.
+- Build or verify a source/evidence manifest and stable evidence IDs.
+- Create the outline, Slide Manifest, exact visible text, numeric/formula
+  whitelist, and evidence boundary for every slide.
+- Every factual claim must cite evidence or be explicitly labeled as framing,
+  interpretation, limitation, or planned work.
+- OCR may propose reading order and geometry. It may not override reviewed
+  wording, technical terms, identifiers, numbers, formulas, or table values.
 
-Prioritize visual fidelity and semantic editability, not the largest possible
-vector count.
+### 2. Narrative and visual contract
+
+- Give every slide one conclusion or one question to answer. Prefer a title
+  that states the conclusion.
+- Choose a stable profile by audience and evidence type. The default is
+  `academic_light`; `academic_minimal` is the only intentionally low-density
+  profile.
+- Lock color, type hierarchy, density, evidence graphics, page-archetype rhythm,
+  prohibited effects, and CJK handling before generation.
+- Use one dominant composition per slide. Reject both non-evidence spectacle and
+  unfinished title-plus-bullet/card scaffolds.
+- Write one self-contained prompt per slide containing the exact short text,
+  layout blueprint, evidence anchors, source boundaries, style contract,
+  negative constraints, and acceptance criteria.
+
+### 3. Built-in ImageGen visual masters
+
+Every first-stage final slide image must come from Codex built-in `image_gen`.
+Do not read or use `OPENAI_API_KEY`, a provider endpoint or SDK, a proxy,
+`STAGE45_IMAGEGEN_CLI`, `LOCAL_IMAGEGEN_COMMAND`, ComfyUI, Stable Diffusion, or
+another backend on this route.
+
+For every pending slide:
+
+1. Make one built-in `image_gen` call with that slide's complete prompt.
+2. Ingest the returned `ig_...` result through
+   `autosearch/ppt/builtin_imagegen_handoff.py` or the equivalent repository
+   handoff.
+3. Record prompt, slide ID, output path, current file hash, backend identity,
+   and provenance.
+4. Review the complete page. Regenerate only failed slides unless the deck-wide
+   style contract is wrong.
+
+Scripts may prepare prompts, materialize tool results, assemble images,
+reconstruct objects, and run QA. They must not draw substitute first-stage
+slides with PIL, SVG, HTML, Canvas, matplotlib, or PowerPoint shapes.
+
+If built-in ImageGen is blocked, preserve the prompt/spec/manifest package and
+the exact error. Retry or repair the same built-in route; do not switch
+backends. Mock images remain visibly marked structural fixtures.
+
+### 4. Image-only proof
+
+- Assemble only the current generated slide images; add no script-generated
+  text boxes or shapes.
+- Require one full-slide image per slide and zero extra semantic objects.
+- Run the ImageGen-first gate against the current image hashes and require
+  strong `ig_...` IDs for a real delivery.
+- Review all slides for content truth, malformed text, visual hierarchy,
+  consistency, and profile completion before reconstruction.
+
+### 5-6. Semantic editable reconstruction
+
+Use `component-manifest-v1` as the bridge from a verified visual master to
+editable objects. Every routed component records its semantic type,
+`content_id`, normalized bbox, z-order, render type, confidence, editability,
+and provenance. `content_id` must resolve to reviewed Slide Manifest content
+when the component carries semantic text.
 
 | Content | Preferred representation |
 | --- | --- |
-| Normal text | Native PowerPoint text box |
-| Simple cards, lines, arrows, nodes | Native PowerPoint shapes/connectors |
-| Flat isolated line art | SVG candidate, accepted only after PowerPoint visual review |
-| Complex illustration, photo, interface, chart artwork | Bounded movable raster asset |
-| Paper/grid/ambient texture | One continuous non-semantic full-slide background |
+| Normal title, body, label, or table text | Native PowerPoint text box |
+| Simple card, line, divider, arrow, or node | Native PowerPoint shape/connector |
+| Flat isolated line art | Bounded SVG candidate, accepted only after PowerPoint visual review |
+| Complex illustration, photo, interface, or chart artwork | Bounded movable raster asset |
+| Paper, grid, or ambient texture | One continuous non-semantic full-slide background |
 
-Rules:
+Preserve three separate geometries: `source_bbox` for provenance, cleanup mask
+for pixel removal, and `layout_bbox` for final placement. A routed foreground
+object must reveal a visually neutral background when hidden. Reject duplicate
+text, frame ghosts, object-shaped patches, shadows, gradients, or silhouettes
+left in the background.
 
-- The default background is one continuous clean image. Background tiling is a
-  legacy compatibility mode and fails a normal gold release.
-- A full-slide background is allowed only when it contains no semantic text or
-  foreground object that should be editable. Audit
-  `semantic_full_slide_pictures`, not the raw full-slide picture count.
-- A simple frame, card boundary, divider, arrow, or node belongs in native
-  PowerPoint geometry, not only in the background. When complex panel content
-  remains raster, pair the bounded `movable-panel-content` asset with its native
-  frame at the same measured bbox.
-- Hiding or moving a routed foreground object must reveal a visually neutral
-  background. Object-shaped inpaint patches, gradients, shadows, or silhouettes
-  count as semantic background residue even when the original edge color was
-  removed and the normal composite render hides the defect.
-- Never trace the complete page. Trace only bounded local candidates.
-- SVG syntax and path count are not enough. Render the exact PPTX in Microsoft
-  PowerPoint and reject a vector when contours become faint, broken, filled, or
-  displaced at slide scale.
-- A rejected SVG may remain in the clean background or become a separately
-  movable transparent PNG extracted from the verified ImageGen master. Record
-  its source bbox, final bbox, fallback asset, and concrete rejection reason.
-- Report `native`, `convertible-vector`, `movable-image`, and `visual-only`
-  separately. Never call a movable PNG or imported SVG fully native.
-- Preserve `source_bbox` for provenance and `layout_bbox` for the actual
-  PowerPoint frame. Use tightly scoped cleanup masks; broad inpainting that
-  erases icons, chart marks, borders, or antialiasing residue is a failure.
-- Every reconstructed native line or connector must carry its own cleanup-mask
-  path and measured pre/post-cleanup color support. A connector with missing or
-  failed cleanup evidence remains unresolved rather than silently duplicated in
-  the background.
-- OCR proposes geometry. Final wording and numeric values must come from the
-  reviewed source/manifest whitelist.
+Never trace the complete page. Report `native`, `convertible-vector`,
+`movable-image`, and `visual-only` separately. A movable PNG or imported SVG is
+not fully native. Record the source/final bbox, fallback asset, and concrete
+reason for every rejected vector.
 
-## Preferred editable command
+### 7. QA and Gold release
 
-```powershell
-python autopptskills\scripts\check_editable_backends.py --json-out <run-dir>\qa\method-capabilities.json
-python autopptskills\scripts\reconstruct_imagegen_slide.py <slide.png> <run-dir> --imagegen-manifest <image-prompts.json> --force-16x9
+Technical success does not imply visual acceptance. A Gold release requires:
+
+- readable PPTX ZIP and expected slide count;
+- ImageGen-first pass for every current slide hash;
+- strict layout and official overflow passes;
+- 100% routed native text/simple-shape coverage and zero semantic full-slide shortcuts;
+- exact-text token coverage of 100% and zero replacement characters in the final PPTX;
+- strict layer-contract pass: one continuous background, zero tiles, native
+  simple frames, bounded local assets, and no duplicated semantic residue;
+- successful export of the exact final PPTX by Microsoft PowerPoint;
+- source, preview, side-by-side, blend, heatmap, and metrics for every slide;
+- explicit full-size review of every slide and the montage, including text
+  residue, wrapping, spacing, emphasis, icons, tables, crops, overlap,
+  spectacle control, and design completion;
+- decisions for every vector candidate and bounded-raster exception;
+- aggregate `release_gate.py` verdict `pass` with
+  `--require-layer-contract` and `--require-design-quality`.
+
+Pixel metrics are comparison evidence, never an automatic acceptance rule.
+Missing Office rendering or incomplete visual review must remain `blocked`.
+
+### 8. Immutable release and learning
+
+- Save the final PPTX, hashes, manifests, reports, review files, rejected
+  variants, and iteration ledger together.
+- Never overwrite an accepted round. If only selected slides improve, create a
+  new round with `scripts/merge_high_fidelity_round.py` and verify inherited and
+  replaced asset hashes.
+- Convert repeated, evidence-backed lessons into the improvement ledger or a
+  focused reference. Keep project-specific exceptions in the project record.
+
+## Minimal durable artifacts
+
+```text
+image-prompts.json
+deck-spec.json
+assets/slides/Sxx.png
+qa/imagegen-first-gate-report.json
+component_manifest.json                 # editable route
+deck-high-fidelity.json                 # editable route
+qa/compose-report.json                  # editable route
+qa/editability-report.json              # Gold route
+qa/exact-text-report.json               # Gold route
+qa/layer-review.json                    # Gold route
+qa/layer-contract-report.json           # Gold route
+qa/final-gate/final-visual-gate.json    # Gold route
+qa/visual-review.json                   # Gold route
+qa/release-report.json                  # Gold route
+final PPTX
 ```
 
-Review `analysis/detection-overlay.png` and
-`qa/reconstruction-report.json`. Apply measured overrides, then rerun from the
-saved analysis so each correction is attributable and deterministic.
-
-Before a vNext gold release, validate the object layers and complete the
-generated per-slide review template:
+## Core commands
 
 ```powershell
+# Editable capability preflight
+python autopptskills\scripts\check_editable_backends.py --json-out <run-dir>\qa\method-capabilities.json
+
+# Reconstruct one verified ImageGen master
+python autopptskills\scripts\reconstruct_imagegen_slide.py <slide.png> <run-dir> --imagegen-manifest <image-prompts.json> --slide-manifest <slide-manifest.json> --force-16x9
+
+# Validate the semantic bridge
+python autopptskills\scripts\component_manifest_qa.py <run-dir>\component_manifest.json --json-out <run-dir>\qa\component-manifest-qa.json
+
+# Validate final semantic layers
 python autopptskills\scripts\layer_contract_gate.py <deck-high-fidelity.json> --pptx <final.pptx> --review <qa\layer-review.json> --out <qa\layer-contract-report.json>
 ```
 
-## Gold release contract
+Read `references/qa-and-validation.md` for the complete release command set and
+report schemas.
 
-Technical success is not visual acceptance. A final release requires:
+## Failure routing
 
-- ImageGen-first provenance pass for every current slide hash;
-- readable PPTX ZIP with the expected slide count;
-- strict layout and official overflow passes;
-- editable grade with 100% routed native text/shape coverage and zero semantic
-  full-slide shortcuts;
-- final-PPTX exact-text token coverage of 100% and zero replacement characters;
-- successful export of the exact final PPTX by Microsoft PowerPoint;
-- source-vs-PowerPoint comparison artifacts for every slide;
-- explicit full-size visual review of every slide, including residue, wrapping,
-  color emphasis, icon integrity, tables, ending pages, spectacle control, and
-  profile-appropriate design completion;
-- for official-source-inspired profiles, explicit per-slide confirmation that
-  no institutional identity asset, copied master, or unapproved institution
-  name appears;
-- strict semantic-layer evidence: one continuous background per slide, zero
-  tiles, native simple frames, bounded local assets, and explicit review that
-  frame lines were not duplicated in the background;
-- recorded decisions for every rejected vector candidate and bounded raster
-  exception.
+- Unsupported or conflicting fact: stop content production for that claim and
+  repair the evidence/whitelist.
+- Malformed ImageGen text or weak composition: regenerate the complete affected
+  slide master.
+- Style drift across the deck: repair the style contract, then regenerate only
+  affected slides unless the contract is globally invalid.
+- Reconstruction mismatch: adjust measured routing/layout first; regenerate an
+  asset only when its pixels are wrong.
+- Broken SVG in PowerPoint: use a bounded transparent PNG and record the visual
+  rejection.
+- Background residue: tighten the cleanup mask and verify the counterfactual
+  background with the foreground object hidden.
+- Full-deck regression after a local repair: merge the reviewed slide into the
+  last accepted baseline and rerun affected gates plus the aggregate release gate.
+- Missing PowerPoint export or visual sign-off: preserve all evidence and report
+  `blocked`; do not infer success from ZIP validity or a non-Office preview.
 
-Run `scripts/release_gate.py` only after the underlying reports and all-slide
-visual-review manifest exist. New Gold releases use both
-`--require-layer-contract` and `--require-design-quality`. Missing Office
-rendering or pending visual review must produce `blocked`, not a structural
-pass. Pixel metrics help compare versions but never decide acceptance by
-themselves.
+## Reference map
 
-## Operational boundaries
-
-- Check the built-in ImageGen capability before a long run. If it is blocked,
-  stop at the blocker, preserve the prepared artifacts, and repair or retry
-  that same built-in route. Never switch to an API-key, proxy, CLI, local
-  command, or alternate provider route.
-- Regenerate or repair weak slides only unless the deck-wide style contract is
-  wrong.
-- When only selected slides improve, use
-  `scripts/merge_high_fidelity_round.py` to create a new round from the last
-  accepted baseline and verify all inherited/replaced asset hashes.
-- Before merging a reviewed single-slide probe whose assets live outside its
-  own `assets/Sxx` folder or whose pixel canvas metadata differs from the
-  baseline, package it immutably with
-  `scripts/package_high_fidelity_patch.py`. The package must copy every
-  referenced local file, preserve file hashes, normalize pixel geometry to the
-  baseline contract, and be re-rendered before acceptance.
-- For full-deck technical QA, run one deck-wide layout pass and 2-4 independent
-  visual comparisons in parallel. When an accepted baseline exists, pass it to
-  `final_visual_gate.py`; every recorded pixel metric must be non-regressive,
-  while full-size visual review remains the final judgment.
-- On Windows, check system-drive space, redirect `TEMP`/`TMP` to a task-local
-  drive, and record exact COM/HRESULT evidence before classifying a PPTX as bad.
-- Keep rejected variants, iteration ledgers, report paths, and exact errors.
-- Never overwrite a previously accepted round; produce a new round and compare
-  it against the accepted baseline.
-
-## Resources
-
-- `references/workflow-architecture.md`: canonical end-to-end architecture and
-  precedence rules.
-- `references/history-and-decisions.md`: evidence eras, retained routes, retired
-  routes, and the reasons behind current defaults.
-- `references/style-system.md`: research-backed evidence-led profiles,
-  bidirectional design-quality rules, and profile selection.
-- `references/official-source-archetypes.md`: first-party source tiers,
-  access/license boundaries, allowed pattern extraction, and identity bans for
-  generic defense and review archetypes.
-- `references/production-lessons.md`: distilled lessons and anti-patterns from
-  prior image-only, multi-style, and multi-round editable decks.
-- `references/project-integration.md`: Stage4.5/PPT repository integration.
-- `references/imagegen-full-slide.md`: prompt-per-slide ImageGen production.
-- `references/image-to-editable-pptx.md`: reconstruction procedure and schemas.
+- `references/workflow-architecture.md`: canonical architecture and precedence.
+- `references/project-integration.md`: repository inputs, routes, and handoff outputs.
+- `references/imagegen-full-slide.md`: prompt-per-slide production and schemas.
+- `references/style-system.md`: profile selection and bidirectional design-quality gate.
+- `references/official-source-archetypes.md`: source/license tiers and identity boundaries.
+- `references/image-to-editable-pptx.md`: detailed reconstruction procedure and schemas.
 - `references/method-selection.md`: OCR/vector/raster/native routing.
-- `references/harness-engineering.md`: iteration and evidence gates.
-- `references/qa-and-validation.md`: validation commands and gold release use.
-- `scripts/verify_imagegen_first_gate.py`: first-stage provenance blocker.
-- `scripts/final_visual_gate.py`: strict layout, editability, PowerPoint export,
-  and per-slide comparison artifacts.
-- `scripts/release_gate.py`: aggregate final release evidence and require
-  explicit all-slide visual sign-off.
-- `scripts/layer_contract_gate.py`: enforce continuous backgrounds, native
-  frames, bounded assets, and per-slide layer review.
-- `scripts/merge_high_fidelity_round.py`: create an immutable next round by
-  replacing only reviewed weak slides from a patch deck.
-- `scripts/migrate_official_style_candidate.py`: rebuild an isolated official-
-  source style manifest/deck candidate with fresh-image requirements; never
-  relabel existing slide images or provenance as if they used the new prompts.
-- `scripts/validate_skill_portability.py`: reject personal paths and fixed
-  numeric service endpoints before synchronization.
-- `scripts/pptx_exact_text_audit.py`: final native-text audit.
-- `scripts/run_slides_test.ps1`: official overflow detector wrapper for Windows.
+- `references/harness-engineering.md`: state machine, iteration ledger, and evidence gates.
+- `references/qa-and-validation.md`: complete validation and release commands.
+- `references/production-lessons.md`: retained practices and rejected approaches.
+- `references/history-and-decisions.md`: evidence history and global-rule change policy.
 
-Keep progress focused on the real bottleneck. Do not claim a deck is complete
-until the highest required gate has actually passed.
+Keep work focused on the highest unmet gate. Do not call a deck complete until
+the requested tier is proven by its own artifacts and exact final-state checks.

@@ -1,72 +1,147 @@
 ---
 name: imagegen-to-editable-ppt
-description: Reconstruct ImageGen full-slide masters into hybrid editable PPTX using Slide Manifest content truth, Component Manifest routing, native text/shapes, SVG groups, and bounded raster assets.
+description: Reconstruct verified ImageGen full-slide masters into semantically editable PPTX files using reviewed Slide Manifest content, Component Manifest routing, native text and simple geometry, bounded SVG/raster assets, and real PowerPoint QA. Use when visual masters already exist and editability is the requested next stage. Do not use it for source analysis, narrative planning, first-stage slide generation, or full-page screenshot/SVG delivery.
 ---
 
-# ImageGen → 可编辑 PPTX 重建引擎
+# ImageGen-to-editable PPTX reconstruction
 
-## 迁移边界
+Use this skill only as the post-generation reconstruction plugin for
+`autopptskills/SKILL.md`. It consumes reviewed source truth and verified
+full-slide ImageGen masters; it does not create a second presentation workflow.
 
-本 skill 只迁移 img2pptx 的“视觉解析 → Component Manifest → Object Router
-→ 可编辑 PPTX 重建”能力。onlyppt 原有的资料理解、叙事、Slide Spec、Design
-System、Storyboard、整页 ImageGen、图片版 PPTX 组装、整套 QA 和发布流程保持不变。
-它是后置重建插件，不是新的 PPT 生成器，也不得绕过或重写前置流程。
+## Input contract
 
-这个 skill 迁移 img2pptx 的语义分解、组件清单、模块化 SVG、语义审计和
-Render → Diff → Repair 思路，但不把整页 `full.svg` 当作最终交付格式。
+Do not start reconstruction until these inputs exist:
 
-## 图像生成入口（强制）
+- verified full-slide ImageGen PNG for every slide being reconstructed;
+- ImageGen manifest with current file hashes and built-in `ig_...` provenance;
+- reviewed Slide Manifest or equivalent exact-text/numeric whitelist;
+- slide dimensions and stable slide IDs;
+- requested delivery tier: editable draft or Gold editable release.
 
-每页必须由 Codex 内置 `image_gen` 自动生成一次完整视觉母版，并通过
-`builtin_imagegen_handoff.py` 记录 `ig_...` provenance。禁止 API、provider SDK、
-代理、本地 ImageGen 命令、ComfyUI/Stable Diffusion 替代服务和 mock 页面。
-内置调用失败时只能重试内置 `image_gen` 或停止并写 blocker report。
+If a source image is not a verified ImageGen master, it may be analyzed as a
+reference, but a Gold deliverable must recreate and verify the master through
+the built-in ImageGen route first.
 
-## 不可变优先级
+## Truth and visual precedence
 
 ```text
-Slide Manifest（文字/数字/公式真值）
+Slide Manifest (wording, numbers, formulas, identifiers)
   > reviewed source text
-  > OCR（只提议坐标）
-ImageGen PNG（视觉母版）
-  → component_manifest-v1
-  → native_text / native_shape / native_connector / svg_group / raster_asset
+  > OCR (geometry and reading-order proposal only)
+
+verified ImageGen PNG (visual master)
+  -> component-manifest-v1
+  -> native_text / native_shape / native_connector / svg_group / raster_asset
+  -> editable PPTX
+  -> real PowerPoint render and release evidence
 ```
 
-普通文字必须是原生 PowerPoint 文本框；简单卡片、节点、分隔线和箭头优先
-原生 Shape/Connector；复杂科研图保留为独立 SVG group 或有边界的图片资产。
-禁止用整页截图伪装成 editable PPT。
+Never use OCR to rewrite reviewed semantic content. Never describe a full-page
+screenshot, `full.svg`, movable PNG, or imported SVG as fully native.
 
-## MVP 命令
+## Reconstruction workflow
+
+1. Preflight OCR, PowerPoint, Node/PptxGenJS, vector/raster tools, disk space,
+   and task-local temporary directories.
+2. Detect candidate text, shapes, connectors, panels, icons, illustrations, and
+   background regions without changing source truth.
+3. Build `component_manifest.json`; assign stable IDs, `content_id`, semantic
+   type, normalized bbox, z-order, render type, editability, confidence, and
+   provenance.
+4. Route each object using the table below. Preserve `source_bbox`, cleanup
+   mask, and `layout_bbox` as separate geometries.
+5. Remove routed foreground pixels from one continuous clean background. Hide
+   each foreground object during review to detect duplicate text, frame ghosts,
+   object-shaped patches, or residue.
+6. Compose the editable PPTX, render the exact file with Microsoft PowerPoint,
+   compare every slide with its verified master, repair local defects, and run
+   the required release gates.
+
+## Object router
+
+| Object | Route | Acceptance condition |
+| --- | --- | --- |
+| Normal title/body/label/table text | `native_text` | Exact reviewed wording and final-PPTX text audit pass |
+| Simple card/frame/divider | `native_shape` | Geometry and style match at slide scale; source pixels removed cleanly |
+| Arrow or connection | `native_connector` | Direction, endpoints, weight, and cleanup evidence pass |
+| Flat isolated line art | `svg_group` candidate | Bounded complexity and exact PowerPoint visual review pass |
+| Complex figure/photo/interface/chart art | `raster_asset` | Bounded, movable, correctly cropped, and explicitly disclosed |
+| Ambient paper/grid/texture | continuous background | One non-semantic full-slide image, zero tiles, zero semantic residue |
+
+Use a native frame around bounded raster panel content when the frame is simple
+geometry. Never keep a semantic frame only in the background.
+
+## Component Manifest v1 contract
+
+Every object records at least:
+
+```text
+id, semantic_type, parent_id, bbox, z_index, content_id,
+render_type, style, editable, confidence, provenance
+```
+
+For semantic text, `content_id` must resolve to the Slide Manifest. Missing
+`content_id` makes the object draft/warn evidence and blocks a Gold release.
+Every rejected SVG candidate must include a concrete reason, source bbox, final
+bbox, and existing fallback asset.
+
+## Core commands
 
 ```powershell
+python autopptskills/scripts/check_editable_backends.py `
+  --json-out <run-dir>/qa/method-capabilities.json
+
 python autopptskills/scripts/reconstruct_imagegen_slide.py `
   <reference.png> <run-dir> `
-  --imagegen-manifest <imagegen_manifest.json> `
-  --slide-manifest <slide_manifest.json> `
+  --imagegen-manifest <imagegen-manifest.json> `
+  --slide-manifest <slide-manifest.json> `
   --force-16x9
 
 python autopptskills/scripts/component_manifest_qa.py `
   <run-dir>/component_manifest.json `
   --json-out <run-dir>/qa/component-manifest-qa.json
+
+python autopptskills/scripts/layer_contract_gate.py `
+  <run-dir>/deck-high-fidelity.json `
+  --pptx <run-dir>/out/editable.pptx `
+  --review <run-dir>/qa/layer-review.json `
+  --out <run-dir>/qa/layer-contract-report.json
 ```
 
-重建脚本继续输出既有 `deck.json`、`background.png`、`assets/icons`、
-`reconstruction-report.json` 和 `editable.pptx`，并新增
-`component_manifest.json`。它复用 onlyppt 的 Composer、ImageGen-first gate、
-PowerPoint render、exact-text audit、layer contract 和 visual diff gate。
+Review `analysis/detection-overlay.png`, `qa/reconstruction-report.json`, the
+PowerPoint previews, and every slide comparison. Apply measured overrides and
+rerun from saved analysis so repairs remain attributable and deterministic.
 
-## Component Manifest v1
+## Output contract
 
-每个对象包含 `id`、`semantic_type`、`parent_id`、normalized `bbox`、`z_index`、
-`content_id`、`render_type`、`style`、`editable`、`confidence` 和 `provenance`。
-`content_id` 必须能回溯到 Slide Manifest；`native_text` 没有 content_id 时只能
-算 draft/warn，不能作为 gold release。
+An editable reconstruction should preserve:
 
-## QA 规则
+- `component_manifest.json` and its QA report;
+- `deck.json` or `deck-high-fidelity.json`;
+- one clean `background.png` per slide;
+- bounded local assets and recorded routing decisions;
+- composed `editable.pptx` and compose report;
+- editability, exact-text, layer-contract, overflow, PowerPoint-render, and
+  visual-comparison evidence appropriate to the requested tier.
 
-- `PPT text == Slide Manifest text`；重要数字、公式和技术名称做 exact match。
-- 每页保留 ImageGen provenance，且 semantic full-slide shortcut 为 false。
-- 每个组件保留 source bbox 与 routing 结果；低置信度可回退 SVG/raster，但必须记录原因。
-- 继续运行现有 `pptx_editability_audit.py`、`pptx_exact_text_audit.py`、
-  `layer_contract_gate.py`、`final_visual_gate.py` 和 `release_gate.py`。
+For Gold delivery, continue through `final_visual_gate.py` and
+`release_gate.py` with the main skill's layer-contract and design-quality
+requirements. Structural composition alone is not completion.
+
+## Failure and fallback rules
+
+- Missing or mismatched provenance: stop and repair the ImageGen-first evidence.
+- Bad wording or numbers: repair the Slide Manifest; do not accept OCR output.
+- Cleanup halo, duplicate text, or frame ghost: tighten the local mask and
+  counterfactually review the clean background.
+- SVG fades, breaks, fills, or moves in PowerPoint: fall back to bounded PNG and
+  record the visual rejection.
+- Complex semantic content cannot be reconstructed faithfully: keep a bounded
+  movable asset and disclose its editability level.
+- PowerPoint COM or visual review is unavailable: preserve artifacts and report
+  `blocked` for Gold delivery.
+
+Read `autopptskills/references/image-to-editable-pptx.md` for schemas,
+`autopptskills/references/method-selection.md` for routing details, and
+`autopptskills/references/qa-and-validation.md` for the full release gates.

@@ -1,18 +1,20 @@
-# 本项目使用的 Skills
+# Skills used by this repository
 
-## `autopptskills/SKILL.md`
+## Skill selection
 
-主技能：ImageGen-first 全页母版、来源真值、可编辑重建、PowerPoint 渲染、视觉/图层/发布门禁。它是本项目默认规范。
+| Skill | Use it for | Boundary |
+| --- | --- | --- |
+| [`autopptskills/SKILL.md`](../autopptskills/SKILL.md) | The complete source-grounded, ImageGen-first presentation workflow | Default repository contract; includes planning, visual masters, reconstruction, PowerPoint QA, and release |
+| [`imagegen-to-editable-ppt/SKILL.md`](imagegen-to-editable-ppt/SKILL.md) | Post-generation reconstruction of a verified full-slide master | A component-manifest and object-routing plugin; not a second deck-generation workflow |
 
-## `skills/imagegen-to-editable-ppt/SKILL.md`
+## External skill boundaries
 
-后置重建技能：Component Manifest、Object Router、native text/shape、SVG/raster 取舍和 Render → Diff → Repair。它不能绕过主技能，也不能把整页 `full.svg` 当成交付格式。
+- `imagegen`: use only for complete per-slide visual masters or bitmap edits;
+  this repository does not use external image-generation APIs or CLIs.
+- `karpathy-guidelines`: use its small, verifiable, low-complexity change
+  discipline when editing workflow code.
+- `autopptskills`: use for academic reports, thesis defenses, competitions,
+  NSFC reviews, and image-to-editable PPTX work.
 
-## 外部 Codex 技能的使用边界
-
-- `imagegen`：仅用于生成完整逐页视觉母版或编辑已有位图；本项目不使用外部图片生成 API/CLI。
-- `karpathy-guidelines`：编写/审查工作流代码时采用小步、可验证、低复杂度修改原则。
-- `autopptskills`：适用于学术报告、毕业答辩、竞赛答辩、国自然申请答辩和图像转可编辑 PPTX。
-
-实际运行以本目录内的 skill 文件和 `autopptskills/SKILL.md` 为准，避免依赖原研究仓库中的论文/实验技能。
-
+The repository-local skill files and `autopptskills/SKILL.md` are authoritative.
+Do not import paper, experiment, or research skills from the source repository.

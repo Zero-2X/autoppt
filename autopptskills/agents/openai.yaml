@@ -1,4 +1,4 @@
 interface:
   display_name: "AutoPPTSkills"
   short_description: "Restrained ImageGen-first PPT with faithful editable layers."
-  default_prompt: "Use $autopptskills to create a source-grounded, restrained ImageGen-first deck, reconstruct continuous backgrounds and semantic editable layers, and pass the real PowerPoint release gates."
+  default_prompt: "Use $autopptskills to create a source-grounded ImageGen-first deck: lock evidence and style, generate one complete built-in ImageGen master per slide, reconstruct honest semantic layers, and do not claim Gold release until real PowerPoint and full-slide review gates pass."
