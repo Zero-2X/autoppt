@@ -38,6 +38,14 @@ class VerifyImagegenFirstGateTest(unittest.TestCase):
 
         self.assertTrue(self.module.has_full_slide_prompt_contract(slide))
 
+    def test_accepts_explicit_english_complete_slide_contract(self) -> None:
+        slide = {
+            "prompt": "16:9 horizontal, 1920x1080, complete final PowerPoint slide image.",
+            "expected_output": "complete final PPT page image",
+        }
+
+        self.assertTrue(self.module.has_full_slide_prompt_contract(slide))
+
     def test_rejects_generic_chinese_image_request(self) -> None:
         slide = {
             "prompt_zh": "生成一张中文图片。",

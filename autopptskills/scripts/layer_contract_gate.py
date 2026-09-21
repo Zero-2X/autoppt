@@ -949,7 +949,12 @@ def validate_slide(
     background = resolve_asset(slide.get("background"), deck_path, assets_dir)
     background_pixels = None
     background_format = ""
-    if background is None:
+    if background is None and slide.get("background_color"):
+        # A flat, native slide background is a continuous background too. It
+        # has no raster pixels to audit, but it is preferable to manufacturing
+        # a full-slide bitmap merely to satisfy the contract.
+        background_format = "solid-color"
+    elif background is None:
         errors.append("missing single continuous background")
     elif not background.exists():
         errors.append(f"background asset missing: {background}")
@@ -1178,7 +1183,11 @@ def validate_slide(
         "slide_id": slide_id,
         "status": PASS if not errors else FAIL,
         "background": str(background) if background else "",
-        "background_mode": "single" if background else "missing",
+        "background_mode": (
+            "solid-color" if background is None and slide.get("background_color")
+            else "single" if background
+            else "missing"
+        ),
         "background_format": background_format,
         "background_dimensions": (
             [int(background_pixels.shape[1]), int(background_pixels.shape[0])]
@@ -1292,7 +1301,12 @@ def main() -> int:
         "strict": not args.allow_background_tiles,
         "slide_count": len(slides),
         "totals": {
-            "backgrounds": sum(1 for item in slide_reports if item["background_mode"] == "single"),
+            # A native flat slide fill is a continuous background just like a
+            # decoded background image. Count both forms for the release gate.
+            "backgrounds": sum(
+                1 for item in slide_reports
+                if item["background_mode"] in {"single", "solid-color"}
+            ),
             "background_tiles": sum(item["background_tiles"] for item in slide_reports),
             "native_texts": sum(item["native_texts"] for item in slide_reports),
             "native_shapes": sum(item["native_shapes"] for item in slide_reports),

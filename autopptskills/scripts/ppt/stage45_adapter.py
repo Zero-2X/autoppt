@@ -320,7 +320,7 @@ def run_real_stage45_imagegen(stage45_dir: Path) -> None:
     build_pptx_with_stage45_builder(stage45_dir, output_path, report_path)
 
 
-def run_ppt(topic_dir: Path, *, mock: bool = True, force: bool = False, style_profile: str = "academic_light") -> dict[str, Any]:
+def run_ppt(topic_dir: Path, *, mock: bool = False, force: bool = False, style_profile: str = "academic_light") -> dict[str, Any]:
     topic_dir = topic_dir.resolve()
     final_dir = topic_dir / "final"
     final_ppt_dir = final_dir / "ppt"
@@ -464,7 +464,16 @@ def run_ppt(topic_dir: Path, *, mock: bool = True, force: bool = False, style_pr
             ]
         ),
     )
-    status = "completed" if audit["verdict"] == "pass" else "blocked"
+    # Local drawing code may exercise structural plumbing, but it is never a
+    # formal slide-design backend. Fail closed even when the mock ZIP/layout
+    # audit succeeds so script-rendered pages cannot be promoted accidentally.
+    status = "completed" if audit["verdict"] == "pass" and not mock else "blocked"
+    if mock:
+        audit["formal_output_eligible"] = False
+        audit.setdefault("issues", []).append("mock_output_is_not_formal_imagegen")
+        audit.setdefault("warnings", []).append(
+            "code-rendered mock pages are structural diagnostics only"
+        )
     update_workspace_state(topic_dir, status, final_deck=final_deck, ppt_audit=final_ppt_dir / "ppt_audit.json")
     return {
         "stage": "ppt",
@@ -478,4 +487,6 @@ def run_ppt(topic_dir: Path, *, mock: bool = True, force: bool = False, style_pr
         "final_deck": str(final_deck),
         "ppt_audit": str(final_ppt_dir / "ppt_audit.json"),
         "audit": audit,
+        "formal_output_eligible": bool(status == "completed" and not mock),
+        "blocking_reason": "mock_output_is_not_formal_imagegen" if mock else "",
     }

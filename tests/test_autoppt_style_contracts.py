@@ -17,6 +17,26 @@ from autopptskills.scripts.style_contracts import (
 
 
 class StyleContractsTest(unittest.TestCase):
+    def test_prompt_routes_preserve_all_reviewed_support(self) -> None:
+        from autosearch.ppt.image_prompt_builder import build_image_prompts as production_build
+
+        support = [f"已审核证据{i}：方法条件与结果解释" for i in range(1, 7)]
+        brief = {"slides": [{
+            "title": "方法验证", "page_role": "content",
+            "one_sentence_message": "对照实验支持研究结论",
+            "supporting_items": support,
+        }]}
+        for builder in (build_image_prompts, production_build):
+            with self.subTest(builder=builder.__module__):
+                slide = builder(
+                    project_name="风格回归检查", slide_brief=brief,
+                    slide_count_min=1, slide_count_max=1,
+                )["slides"][0]
+                self.assertEqual(slide["supporting_items"], support)
+                self.assertTrue(set(support).issubset(slide["exact_text"]))
+                self.assertTrue(all(item in slide["prompt_zh"] for item in support))
+                self.assertEqual(slide["text_density_mode"], "information-rich-readable")
+
     def test_stable_profile_catalog_is_complete(self) -> None:
         self.assertEqual(
             style_profile_choices(),

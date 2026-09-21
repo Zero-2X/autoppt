@@ -1,5 +1,17 @@
 # PPT style and quality handbook
 
+## User-approved defaults (2026-09-20)
+
+The [approved contract](../autopptskills/references/approved-style-contract.md)
+takes precedence over older examples: medium-high information density with
+explanatory text alongside evidence visuals; pale backgrounds, dark text and
+restrained red emphasis; retained verified NSFC/university defense references;
+flat clean text zones and measurable simple geometry without under-design.
+Preserve scientific detail as bounded imagery when needed. Reconstruct the
+frozen ImageGen master without visible differences; keep ordinary text/simple
+shapes native. Missing visual fidelity is blocked, never inferred from object
+counts or average similarity. No automatic title-plus-three-label fallback.
+
 This handbook is continuously maintained from accepted runs and documented
 failures. It is a reusable decision aid, not a substitute for the source,
 slide manifest, or release gates.
@@ -9,7 +21,7 @@ slide manifest, or release gates.
 For thesis defenses, research reports, competitions, and NSFC reviews, optimize
 for clear evidence, conclusion-first communication, restrained but complete
 visual design, editability, and auditability. Start with `academic_light`:
-light paper, low-saturation navy/teal, one controlled accent, clear CJK
+light paper, low-saturation navy/teal, controlled red emphasis, clear CJK
 hierarchy, and graphics tied to the evidence.
 
 ## Stable style principles

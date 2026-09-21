@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520" role="img" aria-labelledby="title desc">
+  <title id="title">AutoPPT 四阶段工作流</title>
+  <desc id="desc">从源材料取证、ImageGen 视觉母版、测量式语义重构到 PowerPoint 验收发布的闭环流程。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#eef3f6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1f2937" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#b4232d"/>
+    </marker>
+    <style>
+      .sans { font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", Arial, sans-serif; }
+      .title { font-size: 32px; font-weight: 700; fill: #20242b; }
+      .subtitle { font-size: 17px; fill: #51606d; }
+      .step { font-size: 14px; font-weight: 700; letter-spacing: 1.5px; fill: #b4232d; }
+      .head { font-size: 23px; font-weight: 700; fill: #20242b; }
+      .body { font-size: 16px; fill: #43515d; }
+      .micro { font-size: 13px; fill: #647482; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="520" rx="28" fill="url(#bg)"/>
+  <path d="M64 92 H1536" stroke="#b4232d" stroke-width="3"/>
+  <text x="64" y="55" class="sans title">AutoPPT：从视觉母版到可编辑 PPTX 的证据闭环</text>
+  <text x="64" y="82" class="sans subtitle">ImageGen-first · measured reconstruction · native semantic layers · real PowerPoint QA</text>
+
+  <g filter="url(#shadow)">
+    <rect x="64" y="132" width="330" height="235" rx="22" fill="#ffffff" stroke="#d7e0e6"/>
+    <rect x="425" y="132" width="330" height="235" rx="22" fill="#ffffff" stroke="#d7e0e6"/>
+    <rect x="786" y="132" width="330" height="235" rx="22" fill="#ffffff" stroke="#d7e0e6"/>
+    <rect x="1147" y="132" width="389" height="235" rx="22" fill="#ffffff" stroke="#d7e0e6"/>
+  </g>
+
+  <g class="sans">
+    <text x="92" y="169" class="step">01 / EVIDENCE</text>
+    <text x="92" y="207" class="head">取证与规划</text>
+    <text x="92" y="243" class="body">论文 / 项目资料</text>
+    <text x="92" y="270" class="body">→ Evidence Map</text>
+    <text x="92" y="297" class="body">→ Slide Manifest</text>
+    <text x="92" y="324" class="body">→ exact-text / 数字白名单</text>
+    <text x="92" y="351" class="micro">先锁事实，再写提示词</text>
+
+    <text x="453" y="169" class="step">02 / VISUAL MASTER</text>
+    <text x="453" y="207" class="head">ImageGen 母版</text>
+    <text x="453" y="243" class="body">每页一个完整页面</text>
+    <text x="453" y="270" class="body">内建 provenance + hash</text>
+    <text x="453" y="297" class="body">image-only checkpoint</text>
+    <text x="453" y="324" class="body">坏页只重生成坏页</text>
+    <text x="453" y="351" class="micro">保留视觉作者性，不用脚本画首稿</text>
+
+    <text x="814" y="169" class="step">03 / RECONSTRUCTION</text>
+    <text x="814" y="207" class="head">测量式语义重构</text>
+    <text x="814" y="243" class="body">source_bbox ≠ layout_bbox</text>
+    <text x="814" y="270" class="body">文字 / 简单几何 → 原生对象</text>
+    <text x="814" y="297" class="body">孤立图标 → OOXML freeform</text>
+    <text x="814" y="324" class="body">复杂科学图 → 有界可移动图片</text>
+    <text x="814" y="351" class="micro">不追求无意义的全页 path</text>
+
+    <text x="1175" y="169" class="step">04 / RELEASE</text>
+    <text x="1175" y="207" class="head">Office 验收与发布</text>
+    <text x="1175" y="243" class="body">PowerPoint 实际渲染</text>
+    <text x="1175" y="270" class="body">exact text / overflow / layer</text>
+    <text x="1175" y="297" class="body">逐页对照 / 差异图 / 全尺寸审查</text>
+    <text x="1175" y="324" class="body">release gate → immutable round</text>
+    <text x="1175" y="351" class="micro">缺证据就 blocked，不把猜测当通过</text>
+  </g>
+
+  <path d="M394 250 H418" stroke="#b4232d" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M755 250 H779" stroke="#b4232d" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M1116 250 H1140" stroke="#b4232d" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="64" y="407" width="1472" height="70" rx="18" fill="#20242b"/>
+  <circle cx="100" cy="442" r="13" fill="#b4232d"/>
+  <text x="130" y="449" class="sans" font-size="18" font-weight="700" fill="#ffffff">持续学习</text>
+  <text x="272" y="449" class="sans" font-size="16" fill="#dbe5ea">把可复用的失败原因、修复策略和验收证据写回 improvement ledger 与 skill references</text>
+</svg>

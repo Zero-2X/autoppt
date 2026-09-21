@@ -430,6 +430,7 @@ async function main() {
   for (let index = 0; index < deck.slides.length; index += 1) {
     const spec = deck.slides[index];
     const slide = pptx.addSlide();
+    if (spec.background_color) slide.background = { color: cleanColor(spec.background_color) };
     const counts = {
       background: 0,
       connectors: 0,

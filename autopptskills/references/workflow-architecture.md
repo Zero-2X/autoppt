@@ -80,7 +80,8 @@ The image-only deck proves the visual master before editability work. It must
 come from the built-in ImageGen capability:
 
 - every current slide image hash has accepted ImageGen provenance;
-- built-in ImageGen runs use strong `ig_...` evidence;
+- built-in ImageGen runs use strong `ig_...` evidence when exposed by the host,
+  or a validated Codex `exec-...` host record with independent built-in fields;
 - the generation manifest identifies the built-in backend and contains no
   provider/API-key/CLI fallback marker;
 - every manifest entry contracts for a complete final page;

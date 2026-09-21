@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
+import json
 import sys
 import tempfile
 import unittest
@@ -77,6 +79,89 @@ class ReconstructImagegenSlideTest(unittest.TestCase):
             self.assertEqual(connector["editability_level"], "native")
             self.assertEqual(connector["role"], "connector")
             self.assertEqual(report["line_cleanup_failures"], 0)
+
+    def test_slide_scoped_list_overrides_do_not_leak_mapping_keys(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            override_path = Path(temporary) / "overrides.json"
+            override_path.write_text(
+                json.dumps(
+                    {
+                        "add_texts": {
+                            "S02": [
+                                {
+                                    "id": "reviewed-label",
+                                    "text": "Reviewed label",
+                                    "bbox": [1, 2, 3, 4],
+                                }
+                            ]
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            analysis = {
+                "slide_id": "S01",
+                "texts": [],
+                "shapes": [],
+                "lines": [],
+                "icon_candidates": [],
+                "unresolved": [],
+            }
+
+            result = self.module._apply_overrides(analysis, override_path)
+
+            self.assertEqual(result["texts"], [])
+
+    def test_visual_first_text_only_drops_auto_geometry_but_keeps_text(self) -> None:
+        analysis = {
+            "texts": [{"id": "text-001", "text": "Title"}],
+            "shapes": [{"id": "shape-001"}],
+            "lines": [{"id": "line-001"}],
+            "icon_candidates": [{"id": "icon-001"}],
+        }
+
+        result = self.module._apply_visual_first_text_only(analysis)
+
+        self.assertEqual(result["texts"], [{"id": "text-001", "text": "Title"}])
+        self.assertEqual(result["shapes"], [])
+        self.assertEqual(result["lines"], [])
+        self.assertEqual(result["icon_candidates"], [])
+        self.assertTrue(result["visual_first_text_only"])
+
+    def test_manifest_verification_requires_matching_builtin_ig_provenance(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "S01.png"
+            source.write_bytes(b"not-a-real-png-but-hashable")
+            prompt_manifest = root / "image-prompts.json"
+            prompt_manifest.write_text(
+                json.dumps({"slides": [{"slide_id": "S01", "final_path": "S01.png"}]}),
+                encoding="utf-8",
+            )
+
+            verified, reason = self.module._verify_imagegen_manifest(prompt_manifest, source)
+            self.assertFalse(verified)
+            self.assertIn("strong ig_", reason or "")
+
+            sidecar = root / "assets" / "generated" / "S01-pipeline.json"
+            sidecar.parent.mkdir(parents=True)
+            sidecar.write_text(
+                json.dumps(
+                    {
+                        "slide_id": "S01",
+                        "status": "generated",
+                        "backend": "builtin",
+                        "provenance_kind": "builtin-imagegen",
+                        "generation_mode": "direct_final_slide_imagegen",
+                        "id": "ig_test_record",
+                        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                        "output_path": str(source),
+                    }
+                ),
+                encoding="utf-8",
+            )
+            verified, reason = self.module._verify_imagegen_manifest(prompt_manifest, source)
+            self.assertTrue(verified, reason)
 
 
 if __name__ == "__main__":

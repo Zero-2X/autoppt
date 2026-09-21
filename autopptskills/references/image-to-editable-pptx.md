@@ -1,5 +1,19 @@
 # Image To Editable PPTX Workflow
 
+Apply the reconstruction and visual acceptance prompts in
+[approved-style-contract.md](approved-style-contract.md). Freeze the accepted
+ImageGen master and reproduce its text appearance, wrapping, position, color,
+red emphasis, geometry, cropping and stacking without redesign. Ordinary text
+and simple shapes remain native; complex scientific imagery may stay bounded
+raster. Visible mismatch blocks release. Pixel equality is a measured claim,
+not an advance guarantee; record unresolved font/renderer limitations.
+
+For a reviewed measured plan, use
+[measured-reconstruction.md](measured-reconstruction.md). It documents the
+deterministic native-text/native-geometry composer, bounded icon tracing, asset
+hashes, and the distinction between a native solid-color background and a
+non-semantic raster background.
+
 Use this when the input is one or more slide screenshots/images and the output must be editable `.pptx`.
 
 ## Editability Contract
@@ -8,7 +22,7 @@ The default reconstruction background policy is one continuous full-slide clean 
 
 Reconstruct each slide by editability tier. Do not stop at one transparent picture layer when the user asked for editable PPTX.
 
-1. Clean background image: only non-semantic paper/grid/ambient texture. One full-slide background picture is acceptable.
+1. Clean background image: only non-semantic paper/grid/ambient texture. One full-slide background picture is acceptable; a native flat `background_color` is also a continuous background and is preferred when it is sufficient.
 2. Native PowerPoint shapes: simple card frames, rounded rectangles, straight lines, arrows, circles, dots, dividers, simple timelines, and basic flowchart boxes when editability matters.
 3. Editable text boxes: all normal text, including titles, section labels, axis labels when readable, table labels when practical.
 4. Raster artwork: complex illustrations, maps, robots, drones, product photos, ornate decorations, and stylized art text that cannot be faithfully represented as normal text. Keep it in the clean imagegen-derived background or split it into movable assets when isolation is reliable.
@@ -37,6 +51,9 @@ Default target for editable PPTX:
 - If a full-slide icon layer drifts or overlaps text, do not keep prompting the same full-slide layer. Switch to region assets or individual assets and place them with measured bboxes.
 - Keep title bands empty in region imagegen prompts; put text back as editable text boxes above the asset layer.
 - Do not auto-vectorize the complete slide. Trace only isolated line-art elements after text and geometry have been removed from the raster target.
+- Never use hidden, transparent, off-canvas, tiny, or 1pt proxy text to make a
+  raster page appear editable; all visible ordinary text must be a native,
+  in-bounds PowerPoint text object.
 - Use `fit: shrink`, explicit line breaks, and measured `char_spacing` for reconstructed text. A visually similar font size is not enough if PowerPoint wraps the title differently.
 - Each selected native line/connector must be removed from the clean background
   with a saved per-object mask. Record source color support, post-cleanup
@@ -129,7 +146,9 @@ python autopptskills\scripts\merge_high_fidelity_round.py <accepted-deck.json> <
 The merge report hashes every inherited and replaced slide asset. Never rebuild
 or overwrite the accepted round merely to repair one local page.
 
-8. Run strict layout, PowerPoint rendering, editability audit, exact-text audit,
+8. If the reviewed plan is measurement-led, compose it with
+   `compose_measured_reconstruction.py` and retain `asset-provenance.json` and
+   `native-traces.json`. Then run strict layout, PowerPoint rendering, editability audit, exact-text audit,
 overflow detection, and visual comparison:
 
 ```powershell

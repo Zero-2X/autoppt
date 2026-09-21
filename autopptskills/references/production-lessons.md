@@ -67,6 +67,39 @@ they generalized across prior image-only, multi-style, and editable runs.
 - Inheriting all unaffected slides from the last accepted round reduced
   regressions and made before/after evidence easier to audit.
 
+## Current 11-slide thesis-defense evidence
+
+The latest thesis-defense run is the concrete reference implementation for the
+current route. It started from a reviewed source document and 11 complete
+ImageGen masters, created an image-only PPTX checkpoint, then used a measured
+plan rather than a full-page trace. The plan separated exact text, native
+geometry, bounded image crops, and isolated flat-icon candidates.
+
+The accepted reconstruction recorded 176 native text objects, 273 planned
+native geometry objects, 53 measured asset candidates, 25 OOXML freeform icon
+traces, and 28 bounded image assets embedded in the final PPTX. The difference
+between candidate assets and embedded images is intentional: traced flat icons
+become native shapes; complex scene/science crops remain movable pictures.
+
+The run also established these reusable repairs:
+
+- Freeze the ImageGen master hash before measuring. Keep the image-only PPTX as
+  the exact visual reference, separate from the editable deliverable.
+- For long Chinese titles and metrics, preserve measured boxes, add explicit
+  line breaks when needed, use `fit: shrink`, and adjust font/width only after
+  a real PowerPoint render. Do not let automatic wrapping decide the layout.
+- A native flat slide fill is a valid continuous background; do not create a
+  raster background merely to inflate picture counts.
+- Generate a hash-bound layer review and a full-size visual review for every
+  slide. The review must cover information density, restrained style, master
+  fidelity, residue, wrapping, emphasis, crop hierarchy, and icon integrity.
+- Keep the old failed fallback in the run archive for attribution, but never
+  use it as a release artifact or as evidence of editability.
+
+This is an evidence-backed route, not a numeric quota. If native tracing would
+damage a scientific figure, retain the bounded raster exception and document
+why.
+
 ## Latest three-style 18-slide evidence
 
 A recent source-grounded run produced `academic_light`,

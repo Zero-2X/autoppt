@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="AutoPPT 从证据到可审计 Gold Deck 的完整工作流展示" />
+  <title>AutoPPT · 从证据到 Gold Deck</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23080d19'/%3E%3Cpath d='M8 22 15.5 7 24 22h-4l-1.8-3.7h-5.6L11 22H8Zm6.1-7h3l-1.5-3.2L14.1 15Z' fill='%236ee7f9'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --ink: #0b1020;
+      --ink-2: #10182a;
+      --ink-3: #16233b;
+      --paper: #f4f7fb;
+      --paper-2: #eaf0f7;
+      --line: rgba(189, 210, 238, .16);
+      --line-dark: rgba(15, 33, 57, .12);
+      --text: #eaf2ff;
+      --muted: #9caec8;
+      --muted-dark: #5f7089;
+      --cyan: #6ee7f9;
+      --cyan-2: #2fbad1;
+      --amber: #ffcb7a;
+      --rose: #ff8e9f;
+      --green: #7de0ae;
+      --shadow: 0 22px 70px rgba(5, 12, 27, .28);
+      --radius: 20px;
+      --max: 1240px;
+      --font-sans: Inter, "SF Pro Display", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--ink);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 80% 0%, rgba(59, 178, 216, .14), transparent 34rem),
+        radial-gradient(circle at 5% 40%, rgba(56, 77, 144, .18), transparent 30rem),
+        linear-gradient(180deg, #080d19 0%, #0c1424 100%);
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    .wrap { width: min(calc(100% - 48px), var(--max)); margin: 0 auto; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--cyan);
+      font: 700 11px/1 var(--font-mono);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 0 5px rgba(110, 231, 249, .12), 0 0 20px rgba(110, 231, 249, .6);
+    }
+    .section { padding: 112px 0; }
+    .section--dark { background: #0d1526; }
+    .section--paper { color: var(--ink); background: var(--paper); }
+    .section-head { display: flex; justify-content: space-between; gap: 32px; align-items: end; margin-bottom: 42px; }
+    .section-head h2 { max-width: 680px; margin: 12px 0 0; font-size: clamp(30px, 4vw, 52px); line-height: 1.06; letter-spacing: -.045em; }
+    .section-head p { max-width: 420px; margin: 0; color: var(--muted); font-size: 15px; }
+    .section--paper .section-head p { color: var(--muted-dark); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid rgba(189, 210, 238, .12);
+      background: rgba(8, 13, 25, .78);
+      backdrop-filter: blur(18px);
+    }
+    .topbar__inner { height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: -.02em; }
+    .brand-mark { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid rgba(110, 231, 249, .55); border-radius: 9px; color: var(--cyan); font: 800 14px var(--font-mono); box-shadow: inset 0 0 18px rgba(110, 231, 249, .1); }
+    .brand small { color: var(--muted); font: 600 10px var(--font-mono); letter-spacing: .12em; margin-left: 3px; }
+    .nav { display: flex; align-items: center; gap: 5px; }
+    .nav a { padding: 8px 12px; color: var(--muted); font-size: 13px; border-radius: 8px; transition: .2s ease; }
+    .nav a:hover, .nav a:focus-visible { color: var(--text); background: rgba(255,255,255,.07); outline: none; }
+    .nav__status { display: inline-flex; align-items: center; gap: 7px; margin-left: 10px; padding: 7px 10px; border: 1px solid rgba(125, 224, 174, .24); border-radius: 999px; color: var(--green); font: 700 10px var(--font-mono); letter-spacing: .08em; }
+    .nav__status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    .hero { position: relative; overflow: hidden; padding: 112px 0 104px; }
+    .hero__grid { display: grid; grid-template-columns: minmax(0, .98fr) minmax(420px, .86fr); gap: 80px; align-items: center; }
+    .hero h1 { max-width: 760px; margin: 22px 0 22px; font-size: clamp(46px, 7vw, 88px); line-height: .98; letter-spacing: -.07em; }
+    .hero h1 em { color: var(--cyan); font-style: normal; }
+    .hero__lede { max-width: 640px; margin: 0; color: #b5c4d9; font-size: 18px; line-height: 1.8; }
+    .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+    .btn { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 16px; border: 1px solid transparent; border-radius: 11px; cursor: pointer; font-size: 13px; font-weight: 700; transition: transform .2s ease, background .2s ease, border-color .2s ease; }
+    .btn:hover { transform: translateY(-2px); }
+    .btn--primary { color: #04111a; background: var(--cyan); box-shadow: 0 10px 30px rgba(110,231,249,.2); }
+    .btn--ghost { color: var(--text); border-color: rgba(189,210,238,.24); background: rgba(255,255,255,.035); }
+    .btn--ghost:hover { border-color: rgba(110,231,249,.5); background: rgba(110,231,249,.08); }
+    .hero__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 630px; gap: 26px; margin-top: 58px; }
+    .stat { padding-left: 14px; border-left: 1px solid rgba(110,231,249,.35); }
+    .stat strong { display: block; color: var(--text); font: 800 28px/1 var(--font-mono); letter-spacing: -.08em; }
+    .stat span { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; }
+    .hero__visual { position: relative; min-height: 500px; }
+    .visual-shell { position: absolute; inset: 0; border: 1px solid rgba(189,210,238,.15); border-radius: 30px; background: linear-gradient(145deg, rgba(25,39,67,.9), rgba(10,17,32,.85)); box-shadow: var(--shadow); overflow: hidden; }
+    .visual-shell::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(146,181,215,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(146,181,215,.08) 1px, transparent 1px); background-size: 38px 38px; mask-image: linear-gradient(135deg, black, transparent 75%); opacity: .6; }
+    .visual-caption { position: absolute; top: 20px; left: 22px; right: 22px; display: flex; justify-content: space-between; color: #8399b7; font: 10px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
+    .visual-caption span:last-child { color: var(--green); }
+    .orbit { position: absolute; width: 292px; height: 292px; left: 50%; top: 47%; transform: translate(-50%, -50%); border: 1px solid rgba(110,231,249,.32); border-radius: 50%; box-shadow: 0 0 0 42px rgba(110,231,249,.025), 0 0 0 84px rgba(110,231,249,.018); }
+    .orbit::before, .orbit::after { content: ""; position: absolute; inset: 28px; border: 1px dashed rgba(110,231,249,.25); border-radius: 50%; }
+    .orbit::after { inset: 83px; border-style: solid; border-color: rgba(255,203,122,.42); }
+    .core { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 104px; height: 104px; transform: translate(-50%,-50%); border: 1px solid rgba(110,231,249,.72); border-radius: 50%; color: var(--cyan); background: radial-gradient(circle, rgba(110,231,249,.18), rgba(13,21,38,.96) 67%); font: 700 11px/1.3 var(--font-mono); letter-spacing: .1em; text-align: center; box-shadow: 0 0 44px rgba(110,231,249,.18); }
+    .orbit-node { position: absolute; display: grid; place-items: center; width: 73px; height: 73px; border: 1px solid rgba(189,210,238,.32); border-radius: 18px; color: #d7e4f7; background: rgba(12,22,40,.93); font-size: 11px; line-height: 1.25; text-align: center; box-shadow: 0 12px 24px rgba(0,0,0,.22); }
+    .orbit-node b { display: block; color: var(--cyan); font: 700 10px var(--font-mono); margin-bottom: 4px; }
+    .orbit-node--a { left: -36px; top: 24px; }
+    .orbit-node--b { right: -36px; top: 24px; }
+    .orbit-node--c { left: -35px; bottom: 20px; }
+    .orbit-node--d { right: -35px; bottom: 20px; }
+    .flow-strip { position: absolute; left: 25px; right: 25px; bottom: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .flow-step { min-height: 58px; padding: 10px; border: 1px solid rgba(189,210,238,.15); border-radius: 11px; background: rgba(8,14,27,.66); }
+    .flow-step small { display: block; color: #7489a7; font: 10px var(--font-mono); }
+    .flow-step strong { display: block; margin-top: 4px; color: #dae8fa; font-size: 12px; }
+
+    .workflow-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin: 0 0 28px; }
+    .filter-group { display: flex; flex-wrap: wrap; gap: 7px; }
+    .filter-btn { padding: 8px 12px; border: 1px solid rgba(189,210,238,.18); border-radius: 999px; color: var(--muted); background: transparent; cursor: pointer; font-size: 12px; transition: .2s ease; }
+    .filter-btn:hover, .filter-btn.is-active { color: #06121a; border-color: var(--cyan); background: var(--cyan); }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font: 11px var(--font-mono); }
+    .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .legend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
+    .legend .dot-content { background: var(--amber); }
+    .legend .dot-visual { background: var(--cyan); }
+    .legend .dot-proof { background: var(--green); }
+    .workflow-layout { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(310px, .68fr); gap: 26px; align-items: start; }
+    .stage-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .stage-card { position: relative; min-height: 166px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: rgba(18,30,51,.64); cursor: pointer; transition: .22s ease; }
+    .stage-card:hover, .stage-card.is-active { border-color: rgba(110,231,249,.7); background: linear-gradient(145deg, rgba(28,52,79,.9), rgba(15,28,49,.9)); transform: translateY(-2px); }
+    .stage-card[hidden] { display: none; }
+    .stage-top { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+    .stage-no { color: var(--cyan); font: 700 11px var(--font-mono); letter-spacing: .08em; }
+    .stage-kind { padding: 4px 7px; border-radius: 6px; color: #a9bfdc; background: rgba(126,154,191,.12); font: 10px var(--font-mono); }
+    .stage-card h3 { margin: 16px 0 7px; font-size: 18px; letter-spacing: -.025em; }
+    .stage-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .stage-output { display: inline-flex; align-items: center; gap: 5px; margin-top: 15px; color: #b9cce4; font: 10px var(--font-mono); }
+    .stage-output::before { content: "↳"; color: var(--amber); font-size: 14px; }
+    .stage-detail { position: sticky; top: 98px; min-height: 508px; padding: 28px; border: 1px solid rgba(110,231,249,.28); border-radius: 20px; background: linear-gradient(160deg, #12213a, #0b1425); box-shadow: 0 22px 54px rgba(4,10,22,.25); }
+    .detail-index { display: flex; justify-content: space-between; align-items: center; color: var(--cyan); font: 700 11px var(--font-mono); letter-spacing: .12em; }
+    .detail-index span:last-child { color: var(--green); }
+    .stage-detail h3 { margin: 28px 0 12px; font-size: 30px; line-height: 1.1; letter-spacing: -.04em; }
+    .stage-detail > p { margin: 0; color: #b6c8df; font-size: 15px; line-height: 1.8; }
+    .detail-block { margin-top: 29px; padding-top: 20px; border-top: 1px solid var(--line); }
+    .detail-block h4 { margin: 0 0 11px; color: #e8f1ff; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+    .detail-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .detail-list li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; color: #abc0da; font-size: 13px; }
+    .detail-list li::before { content: "✓"; color: var(--green); font-weight: 800; }
+    .detail-code { margin-top: 24px; padding: 12px 14px; border: 1px solid rgba(110,231,249,.16); border-radius: 9px; color: #8eddec; background: rgba(0,0,0,.18); font: 11px/1.55 var(--font-mono); overflow-wrap: anywhere; }
+
+    .adv-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+    .adv-card { min-height: 218px; padding: 23px; border: 1px solid var(--line-dark); border-radius: 16px; background: rgba(255,255,255,.64); box-shadow: 0 14px 30px rgba(38,61,91,.06); }
+    .adv-card__top { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+    .adv-num { color: var(--cyan-2); font: 700 11px var(--font-mono); }
+    .adv-icon { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid rgba(47,186,209,.3); border-radius: 9px; color: var(--cyan-2); font-size: 16px; }
+    .adv-card h3 { margin: 24px 0 8px; color: var(--ink); font-size: 19px; letter-spacing: -.025em; }
+    .adv-card p { margin: 0; color: var(--muted-dark); font-size: 13px; line-height: 1.75; }
+    .adv-card b { color: #1d4e67; font-weight: 700; }
+
+    .pain-head { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 26px; }
+    .pain-head h2 { max-width: 680px; margin: 12px 0 0; font-size: clamp(30px, 4vw, 52px); line-height: 1.06; letter-spacing: -.045em; }
+    .pain-toggle { display: flex; gap: 4px; padding: 4px; border: 1px solid rgba(189,210,238,.16); border-radius: 11px; background: rgba(255,255,255,.04); }
+    .pain-toggle button { border: 0; border-radius: 7px; padding: 8px 11px; color: var(--muted); background: transparent; cursor: pointer; font-size: 12px; }
+    .pain-toggle button.is-active { color: #091421; background: var(--amber); }
+    .pain-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .pain-card { display: grid; grid-template-columns: 48px 1fr; gap: 16px; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: rgba(18,30,51,.62); }
+    .pain-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; color: var(--rose); background: rgba(255,142,159,.1); font: 800 14px var(--font-mono); }
+    .pain-card h3 { margin: 0 0 6px; font-size: 17px; }
+    .pain-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.72; }
+    .pain-meta { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
+    .pain-meta span { padding: 4px 7px; border-radius: 5px; color: #aec1dc; background: rgba(126,154,191,.1); font: 10px var(--font-mono); }
+    .pain-meta .severity { color: var(--rose); background: rgba(255,142,159,.09); }
+
+    .editability-intro { display: grid; grid-template-columns: .84fr 1.16fr; gap: 50px; align-items: start; }
+    .editability-intro h2 { margin: 14px 0 15px; color: var(--ink); font-size: clamp(32px, 4vw, 56px); line-height: 1; letter-spacing: -.06em; }
+    .editability-intro > div > p { max-width: 470px; margin: 0; color: var(--muted-dark); font-size: 15px; line-height: 1.8; }
+    .formula { margin-top: 27px; padding: 17px; border: 1px solid rgba(47,186,209,.25); border-radius: 13px; color: #164861; background: rgba(110,231,249,.1); font: 12px/1.7 var(--font-mono); }
+    .formula s { color: #a5616d; text-decoration-thickness: 2px; }
+    .route-table { overflow: hidden; border: 1px solid var(--line-dark); border-radius: 16px; background: #fff; }
+    .route-row { display: grid; grid-template-columns: 1.05fr .9fr 1.45fr; gap: 20px; align-items: center; padding: 17px 19px; border-bottom: 1px solid var(--line-dark); }
+    .route-row:last-child { border-bottom: 0; }
+    .route-row--head { color: #6d7e96; background: #eef3f8; font: 700 10px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
+    .route-row strong { color: var(--ink); font-size: 13px; }
+    .route-row p { margin: 0; color: var(--muted-dark); font-size: 12px; line-height: 1.55; }
+    .route-tag { display: inline-flex; width: fit-content; padding: 6px 8px; border-radius: 7px; color: #154d60; background: #dcf8fc; font: 700 10px var(--font-mono); }
+    .route-tag--svg { color: #594a1e; background: #fff1d1; }
+    .route-tag--raster { color: #613044; background: #ffe2ea; }
+    .route-tag--bg { color: #3d4c68; background: #e8edf5; }
+
+    .release-section { background: #091321; }
+    .release-grid { display: grid; grid-template-columns: .86fr 1.14fr; gap: 55px; align-items: start; }
+    .release-grid h2 { margin: 14px 0 18px; font-size: clamp(33px, 4vw, 58px); line-height: 1; letter-spacing: -.06em; }
+    .release-grid .lede { max-width: 450px; margin: 0; color: var(--muted); font-size: 15px; line-height: 1.8; }
+    .release-note { margin-top: 28px; padding: 16px 18px; border-left: 2px solid var(--amber); color: #d7c59f; background: rgba(255,203,122,.07); font-size: 13px; line-height: 1.7; }
+    .gate-list { display: grid; gap: 10px; }
+    .gate { display: grid; grid-template-columns: 34px 1fr auto; gap: 13px; align-items: center; padding: 14px 16px; border: 1px solid var(--line); border-radius: 13px; background: rgba(21,35,58,.76); }
+    .gate__no { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; color: #0b1724; background: var(--green); font: 800 10px var(--font-mono); }
+    .gate strong { display: block; font-size: 13px; }
+    .gate span { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .gate__state { color: var(--green); font: 700 10px var(--font-mono); letter-spacing: .08em; }
+
+    .sources { padding: 50px 0 62px; color: var(--ink); background: var(--paper-2); }
+    .sources__inner { display: flex; justify-content: space-between; gap: 28px; align-items: start; }
+    .sources h2 { margin: 0 0 8px; font-size: 18px; letter-spacing: -.02em; }
+    .sources p { margin: 0; color: var(--muted-dark); font-size: 13px; }
+    .source-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; max-width: 680px; }
+    .source-links a { padding: 8px 10px; border: 1px solid var(--line-dark); border-radius: 8px; color: #31546e; background: rgba(255,255,255,.55); font: 11px var(--font-mono); transition: .2s ease; }
+    .source-links a:hover { color: #0a253a; border-color: var(--cyan-2); background: #fff; }
+    footer { padding: 22px 0 30px; color: #7d90ac; background: var(--paper-2); font: 11px var(--font-mono); }
+    footer .wrap { display: flex; justify-content: space-between; gap: 20px; }
+
+    @media (max-width: 1000px) {
+      .hero__grid, .editability-intro, .release-grid { grid-template-columns: 1fr; gap: 46px; }
+      .hero__visual { min-height: 460px; }
+      .workflow-layout { grid-template-columns: 1fr; }
+      .stage-detail { position: relative; top: 0; min-height: unset; }
+      .adv-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .sources__inner { flex-direction: column; }
+      .source-links { justify-content: flex-start; }
+    }
+    @media (max-width: 680px) {
+      .wrap { width: min(calc(100% - 30px), var(--max)); }
+      .section { padding: 76px 0; }
+      .topbar__inner { height: 62px; }
+      .nav a { display: none; }
+      .nav__status { margin-left: 0; }
+      .hero { padding: 76px 0 74px; }
+      .hero h1 { font-size: clamp(44px, 14vw, 68px); }
+      .hero__lede { font-size: 16px; }
+      .hero__stats { gap: 13px; margin-top: 42px; }
+      .stat strong { font-size: 22px; }
+      .stat span { font-size: 11px; }
+      .hero__visual { min-height: 410px; }
+      .orbit { transform: translate(-50%, -50%) scale(.78); }
+      .flow-strip { left: 13px; right: 13px; grid-template-columns: repeat(2, 1fr); }
+      .section-head, .pain-head { display: block; }
+      .section-head p { margin-top: 16px; }
+      .workflow-toolbar { display: block; }
+      .legend { margin-top: 16px; }
+      .stage-list, .pain-grid, .adv-grid { grid-template-columns: 1fr; }
+      .stage-card { min-height: unset; }
+      .pain-toggle { margin-top: 20px; width: fit-content; }
+      .route-row { grid-template-columns: 1fr; gap: 7px; }
+      .route-row--head { display: none; }
+      .sources__inner { display: block; }
+      .source-links { margin-top: 18px; }
+      footer .wrap { display: block; }
+      footer span { display: block; margin-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <a class="brand" href="#overview" aria-label="回到首页">
+        <span class="brand-mark">A/</span>
+        <span>AutoPPT <small>WORKFLOW MAP</small></span>
+      </a>
+      <nav class="nav" aria-label="页面导航">
+        <a href="#workflow">全链路</a>
+        <a href="#advantages">优势</a>
+        <a href="#pain-points">痛点</a>
+        <a href="#editability">矢量化边界</a>
+        <a href="#release">发布门禁</a>
+        <span class="nav__status">RELEASE PASS · 11 SLIDES</span>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="overview">
+      <div class="wrap hero__grid">
+        <div>
+          <div class="eyebrow">ImageGen-first / semantic reconstruction</div>
+          <h1>从证据出发，<em>把一张图</em>变成可审计的 Gold Deck。</h1>
+          <p class="hero__lede">这不是“把图片塞进 PPT”，也不是“把每个像素都描成路径”。工作流先守住来源、数字和视觉母版，再用语义路由把真正需要修改的部分交给 PowerPoint。</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#workflow">查看完整链路 <span aria-hidden="true">↓</span></a>
+            <a class="btn btn--ghost" href="#pain-points">先看难点 <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="hero__stats" aria-label="工作流关键指标">
+            <div class="stat"><strong>10</strong><span>个可阻断阶段</span></div>
+            <div class="stat"><strong>4</strong><span>种诚实编辑层级</span></div>
+            <div class="stat"><strong>0</strong><span>语义全页图片捷径</span></div>
+          </div>
+        </div>
+        <div class="hero__visual" aria-label="工作流概览图">
+          <div class="visual-shell">
+            <div class="visual-caption"><span>RUN / CURRENT ARCHITECTURE</span><span>PROVENANCE LOCKED</span></div>
+            <div class="orbit">
+              <div class="core">SOURCE<br />→ GOLD</div>
+              <div class="orbit-node orbit-node--a"><b>01</b>证据<br />真值</div>
+              <div class="orbit-node orbit-node--b"><b>03</b>视觉<br />母版</div>
+              <div class="orbit-node orbit-node--c"><b>05</b>语义<br />路由</div>
+              <div class="orbit-node orbit-node--d"><b>07</b>发布<br />门禁</div>
+            </div>
+            <div class="flow-strip">
+              <div class="flow-step"><small>INPUT</small><strong>source / evidence</strong></div>
+              <div class="flow-step"><small>MASTER</small><strong>one page / one prompt</strong></div>
+              <div class="flow-step"><small>EDITABLE</small><strong>native + bounded asset</strong></div>
+              <div class="flow-step"><small>PROOF</small><strong>Office render / review</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--dark" id="workflow">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">01 / operating chain</div>
+            <h2>每一步都有产物，也都有“不能继续”的理由。</h2>
+          </div>
+          <p>点击阶段卡片查看输入、关键动作和阻断条件。筛选器按工作性质重新组织同一条链路。</p>
+        </div>
+        <div class="workflow-toolbar">
+          <div class="filter-group" role="tablist" aria-label="阶段筛选">
+            <button class="filter-btn is-active" data-filter="all" role="tab" aria-selected="true">全部 10</button>
+            <button class="filter-btn" data-filter="content" role="tab" aria-selected="false">内容 02</button>
+            <button class="filter-btn" data-filter="visual" role="tab" aria-selected="false">视觉 03</button>
+            <button class="filter-btn" data-filter="proof" role="tab" aria-selected="false">重构 / QA / 发布 05</button>
+          </div>
+          <div class="legend" aria-label="阶段颜色说明">
+            <span><i class="dot-content"></i>内容真值</span>
+            <span><i class="dot-visual"></i>视觉生产</span>
+            <span><i class="dot-proof"></i>可编辑与证据</span>
+          </div>
+        </div>
+        <div class="workflow-layout">
+          <div class="stage-list" id="stageList">
+            <article class="stage-card" data-stage="0" data-category="content">
+              <div class="stage-top"><span class="stage-no">STAGE 00</span><span class="stage-kind">CONTENT</span></div>
+              <h3>预检与 Run Identity</h3>
+              <p>检查来源、工具能力、空间和上一次 accepted round，建立独立运行目录。</p>
+              <span class="stage-output">preflight report / run folder</span>
+            </article>
+            <article class="stage-card is-active" data-stage="1" data-category="content">
+              <div class="stage-top"><span class="stage-no">STAGE 01</span><span class="stage-kind">CONTENT</span></div>
+              <h3>内容真值与证据地图</h3>
+              <p>把每个主张、数字、公式、表格值绑定到来源，生成 Slide Manifest 和白名单。</p>
+              <span class="stage-output">evidence manifest / exact-text whitelist</span>
+            </article>
+            <article class="stage-card" data-stage="2" data-category="visual">
+              <div class="stage-top"><span class="stage-no">STAGE 02</span><span class="stage-kind">VISUAL</span></div>
+              <h3>叙事与 Style Contract</h3>
+              <p>锁定结论式标题、页面原型、密度、颜色、字体和负面约束。</p>
+              <span class="stage-output">slide brief / profile / prompt plan</span>
+            </article>
+            <article class="stage-card" data-stage="3" data-category="visual">
+              <div class="stage-top"><span class="stage-no">STAGE 03</span><span class="stage-kind">VISUAL</span></div>
+              <h3>一页一提示的 ImageGen 母版</h3>
+              <p>每页生成一个完整视觉页面，保存 prompt、hash、slide ID 和内建 ImageGen provenance。</p>
+              <span class="stage-output">ig_… / validated exec-… / slide master PNG</span>
+            </article>
+            <article class="stage-card" data-stage="4" data-category="visual">
+              <div class="stage-top"><span class="stage-no">STAGE 04</span><span class="stage-kind">VISUAL</span></div>
+              <h3>Image-only 证明</h3>
+              <p>先组装图片版 PPTX，确认每页只有一张完整图片，证明视觉母版本身成立。</p>
+              <span class="stage-output">image-only PPTX / first-gate report</span>
+            </article>
+            <article class="stage-card" data-stage="5" data-category="proof">
+              <div class="stage-top"><span class="stage-no">STAGE 05</span><span class="stage-kind">REBUILD</span></div>
+              <h3>视觉解析与语义路由</h3>
+              <p>按对象而不是按像素拆解，记录 source / cleanup / layout 三套几何。</p>
+              <span class="stage-output">component manifest / routing decisions</span>
+            </article>
+            <article class="stage-card" data-stage="6" data-category="proof">
+              <div class="stage-top"><span class="stage-no">STAGE 06</span><span class="stage-kind">REBUILD</span></div>
+              <h3>可编辑 PPTX 组合</h3>
+              <p>普通文字和简单几何原生化，复杂艺术保留为 bounded asset，背景保持连续。</p>
+              <span class="stage-output">editable PPTX / compose report</span>
+            </article>
+            <article class="stage-card" data-stage="7" data-category="proof">
+              <div class="stage-top"><span class="stage-no">STAGE 07</span><span class="stage-kind">QA</span></div>
+              <h3>技术门禁与 Office 导出</h3>
+              <p>做 ZIP、布局、溢出、文字、图层契约检查，并用 Microsoft PowerPoint 真实导出。</p>
+              <span class="stage-output">exact-text / layer / Office reports</span>
+            </article>
+            <article class="stage-card" data-stage="8" data-category="proof">
+              <div class="stage-top"><span class="stage-no">STAGE 08</span><span class="stage-kind">QA</span></div>
+              <h3>逐页全尺寸视觉审查</h3>
+              <p>对比 source、preview、side-by-side、blend 和 heatmap，检查残留、层级和完成度。</p>
+              <span class="stage-output">visual-review manifest / montage</span>
+            </article>
+            <article class="stage-card" data-stage="9" data-category="proof">
+              <div class="stage-top"><span class="stage-no">STAGE 09</span><span class="stage-kind">RELEASE</span></div>
+              <h3>不可变发布与经验回灌</h3>
+              <p>只合并被修复的弱页，保留已验收基线，把根因和证据写回 ledger。</p>
+              <span class="stage-output">Gold release / improvement ledger</span>
+            </article>
+          </div>
+          <aside class="stage-detail" id="stageDetail" aria-live="polite">
+            <div class="detail-index"><span id="detailIndex">STAGE 01 / CONTENT TRUTH</span><span id="detailState">GATE REQUIRED</span></div>
+            <h3 id="detailTitle">内容真值与证据地图</h3>
+            <p id="detailLead">先回答“这句话从哪里来”，再讨论“这页怎么好看”。所有可见事实、数字、公式和表格值都要能回到 reviewed source。</p>
+            <div class="detail-block">
+              <h4>本阶段要留下的证据</h4>
+              <ul class="detail-list" id="detailList">
+                <li>稳定的 evidence ID 与 source boundary</li>
+                <li>Slide Manifest、exact-text whitelist、numeric whitelist</li>
+                <li>没有来源或冲突的主张被标记为 blocked</li>
+              </ul>
+            </div>
+            <div class="detail-code" id="detailCode">Slide Manifest → reviewed source → exact text / numbers</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--paper" id="advantages">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">02 / what gets better</div>
+            <h2>优势不是“自动化更多”，而是证据链更短、责任边界更清楚。</h2>
+          </div>
+          <p>把生成、重构和验收拆开后，每个质量问题都有归属：是内容错、母版错、路由错，还是 Office 渲染错。</p>
+        </div>
+        <div class="adv-grid">
+          <article class="adv-card"><div class="adv-card__top"><span class="adv-num">A / 01</span><span class="adv-icon">⌁</span></div><h3>来源与数字可追溯</h3><p>事实不再靠 OCR 或模型“猜”。<b>source → evidence → whitelist</b> 形成可回查的链，错误更容易定位。</p></article>
+          <article class="adv-card"><div class="adv-card__top"><span class="adv-num">A / 02</span><span class="adv-icon">✦</span></div><h3>视觉母版先被证明</h3><p>先验证完整页面的视觉意图，再进入 PPTX。避免一边生成、一边用代码补成模板。</p></article>
+          <article class="adv-card"><div class="adv-card__top"><span class="adv-num">A / 03</span><span class="adv-icon">◫</span></div><h3>编辑性分层而非虚假全矢量</h3><p>文字、几何、线稿、复杂艺术各走合适路线，明确写出 <b>native / SVG / raster / background</b>。</p></article>
+          <article class="adv-card"><div class="adv-card__top"><span class="adv-num">A / 04</span><span class="adv-icon">!</span></div><h3>Fail-closed 的质量门禁</h3><p>缺 ImageGen provenance、Office 导出或全尺寸审查时，状态是 <b>blocked</b>，不会被 ZIP 有效性掩盖。</p></article>
+          <article class="adv-card"><div class="adv-card__top"><span class="adv-num">A / 05</span><span class="adv-icon">↻</span></div><h3>局部修复，避免全 deck 回归</h3><p>弱页只生成新 round 并合并指定 slide ID，已验收页面和 hash 保持不动。</p></article>
+          <article class="adv-card"><div class="adv-card__top"><span class="adv-num">A / 06</span><span class="adv-icon">⌘</span></div><h3>每次迭代都能沉淀</h3><p>失败、根因、修复和证据写进 improvement ledger，下一次生成先读历史，而不是重复踩坑。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--dark" id="pain-points">
+      <div class="wrap">
+        <div class="pain-head">
+          <div>
+            <div class="eyebrow">03 / hard problems</div>
+            <h2>过去最难的，不是把文件生成出来，而是让“可编辑”不牺牲“像原稿”。</h2>
+          </div>
+          <div class="pain-toggle" role="tablist" aria-label="痛点视图切换">
+            <button class="is-active" data-pain-view="why" role="tab" aria-selected="true">为什么难</button>
+            <button data-pain-view="fix" role="tab" aria-selected="false">现在怎么处理</button>
+          </div>
+        </div>
+        <div class="pain-grid" id="painGrid">
+          <article class="pain-card" data-why="ImageGen 对长中文、公式、数字和表格值并不稳定；一旦把很多字塞进 prompt，视觉母版本身就可能失真。" data-fix="短化可见文字，把重要措辞和数字交给 exact-text / numeric whitelist；母版乱码时重生成整页，不用后置文字覆盖掩盖。"><div class="pain-mark">01</div><div><h3>长中文与数字乱码</h3><p class="pain-copy"></p><div class="pain-meta"><span class="severity">高风险</span><span>ImageGen / CJK</span></div></div></article>
+          <article class="pain-card" data-why="整页自动 trace 会把渐变、阴影、照片和装饰拆成成千上万个无意义 path，PPT 体积和维护成本一起爆炸。" data-fix="只追踪孤立、扁平、可测量的线稿；复杂插画、图表和 UI 保留为 bounded movable raster，并记录拒绝原因。"><div class="pain-mark">02</div><div><h3>全页矢量化的路径爆炸</h3><p class="pain-copy"></p><div class="pain-meta"><span class="severity">结构性</span><span>SVG / path count</span></div></div></article>
+          <article class="pain-card" data-why="从母版中抠出文字或图标时，过宽的 mask 会吃掉卡片边框、阴影或图表标记，留下 halo、ghost 和脏背景。" data-fix="分离 source_bbox、cleanup mask、layout_bbox；对象隐藏后必须露出中性背景，并做 counterfactual review。"><div class="pain-mark">03</div><div><h3>清理背景后的残影</h3><p class="pain-copy"></p><div class="pain-meta"><span class="severity">高风险</span><span>mask / cleanup</span></div></div></article>
+          <article class="pain-card" data-why="SVG 文件语法正确，不代表 PowerPoint 的轮廓、填充、透明度和抗锯齿也正确；细线可能变淡、断裂或变成实心块。" data-fix="SVG 只能作为 candidate，必须经过真实 PowerPoint render；失败就回退为测量过的透明 PNG，不为了“矢量数量”牺牲像素。"><div class="pain-mark">04</div><div><h3>SVG 在 Office 中变形</h3><p class="pain-copy"></p><div class="pain-meta"><span class="severity">渲染性</span><span>PowerPoint / contour</span></div></div></article>
+          <article class="pain-card" data-why="OCR 能帮忙找位置，却会拆碎标题、误读术语、复制一份文字；如果把 OCR 当成真值，重构后的 PPT 会出现重复和错数。" data-fix="OCR 只提供 geometry；语义文本必须回到 reviewed Slide Manifest，原文字框移除后才放 native text。"><div class="pain-mark">05</div><div><h3>OCR 位置对了，语义错了</h3><p class="pain-copy"></p><div class="pain-meta"><span class="severity">数据性</span><span>OCR / duplicate text</span></div></div></article>
+          <article class="pain-card" data-why="结构审计通过，只说明对象和 XML 看起来合理；CJK 换行、字号、残留分隔点、图标位置和设计完成度仍可能在最终页面上失败。" data-fix="必须打开并导出 exact final PPTX，再逐页全尺寸审查 source / preview / side-by-side / heatmap；metrics 只能做证据，不能代替 sign-off。"><div class="pain-mark">06</div><div><h3>结构通过 ≠ 视觉通过</h3><p class="pain-copy"></p><div class="pain-meta"><span class="severity">验收性</span><span>Office render / review</span></div></div></article>
+          <article class="pain-card" data-why="为了修一页而整套重新生成，容易让已接受页面发生风格漂移、文字变化或新的布局回归，且无法解释是哪一步导致的。" data-fix="保留 immutable accepted round；只替换被审查的 slide ID，验证继承与替换资产 hash，再跑受影响门禁和 aggregate gate。"><div class="pain-mark">07</div><div><h3>局部修复带来全 deck 回归</h3><p class="pain-copy"></p><div class="pain-meta"><span class="severity">流程性</span><span>round / baseline merge</span></div></div></article>
+          <article class="pain-card" data-why="如果只追求‘看起来能编辑’，很容易把隐藏文字、整页截图或透明代理塞进 PPT，名义上有对象，实际无法安全修改。" data-fix="把 editability 说清楚：normal text 必须 native；复杂艺术允许 movable-image；禁止 text-raster-fallback、隐藏 1×1 文本和 full-page semantic shortcut。"><div class="pain-mark">08</div><div><h3>“可编辑”被误解成对象数量</h3><p class="pain-copy"></p><div class="pain-meta"><span class="severity">诚信性</span><span>semantic contract</span></div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--paper" id="editability">
+      <div class="wrap">
+        <div class="editability-intro">
+          <div>
+            <div class="eyebrow">04 / vectorization boundary</div>
+            <h2>不追求全矢量，追求可解释。</h2>
+            <p>重构的单位是“语义对象”。什么应该能改、什么应该保持完整、什么只能作为背景，都在路由表里说清楚。</p>
+            <div class="formula"><s>full-page trace</s><br />= native text + native shape + bounded SVG + movable raster + 1 continuous background</div>
+          </div>
+          <div class="route-table" role="table" aria-label="对象到编辑层级的路由">
+            <div class="route-row route-row--head" role="row"><span>对象</span><span>推荐路线</span><span>边界与证据</span></div>
+            <div class="route-row" role="row"><strong>标题 / 正文 / 表格文字</strong><span class="route-tag">NATIVE TEXT</span><p>100% 正常文字走原生文本；用 XML / exact-text 审计确认没有替代字符。</p></div>
+            <div class="route-row" role="row"><strong>卡片 / 分隔线 / 箭头 / 节点</strong><span class="route-tag">NATIVE SHAPE</span><p>可测量的简单几何原生化；隐藏前景后，背景不能留下重复边框。</p></div>
+            <div class="route-row" role="row"><strong>孤立的扁平线稿</strong><span class="route-tag route-tag--svg">SVG CANDIDATE</span><p>只在路径简单且 PowerPoint render 通过时接受；否则保留 fallback。</p></div>
+            <div class="route-row" role="row"><strong>照片 / 插画 / UI / 密集图表</strong><span class="route-tag route-tag--raster">MOVABLE IMAGE</span><p>以有边界、可移动的透明 PNG 保真；明确记录 source_bbox 和拒绝矢量原因。</p></div>
+            <div class="route-row" role="row"><strong>纸张纹理 / 网格 / ambient field</strong><span class="route-tag route-tag--bg">CONTINUOUS BG</span><p>允许每页一张连续非语义背景；禁止 3×4 等 tile，也禁止语义全页捷径。</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section release-section" id="release">
+      <div class="wrap release-grid">
+        <div>
+          <div class="eyebrow">05 / gold release</div>
+          <h2>证明齐了，才叫完成。</h2>
+          <p class="lede">最终交付不是一个能打开的 .pptx，而是一组能解释“它为什么可信”的证据：来源、母版、对象、渲染、审查和版本。</p>
+          <div class="release-note">当前 thesis-defense round 已通过：11 页、176 个原生文本框、273 个“已审核计划”几何对象，最终 PPTX 审计为 298 个原生形状（含 25 个原生图标轮廓）；28 个复杂科学/场景元素保留为有界可移动图片。逐字匹配、PowerPoint 渲染、溢出、图层契约和逐页视觉审查均为 <strong>pass</strong>。若后续证据缺失，状态仍应回落为 <strong>blocked</strong>，不能用 ZIP 有效或一张预览图推断 Gold。</div>
+        </div>
+        <div class="gate-list" aria-label="Gold release 门禁清单">
+          <div class="gate"><span class="gate__no">01</span><div><strong>ImageGen-first provenance</strong><span>每张当前 slide hash 都对应内建 ig_… 或已验证 exec-… 记录</span></div><span class="gate__state">REQUIRED</span></div>
+          <div class="gate"><span class="gate__no">02</span><div><strong>Source & exact text</strong><span>事实、数字、公式可回源；最终 PPTX 文字覆盖率 100%</span></div><span class="gate__state">REQUIRED</span></div>
+          <div class="gate"><span class="gate__no">03</span><div><strong>Semantic layer contract</strong><span>native text / simple shape / bounded asset 路由清楚</span></div><span class="gate__state">REQUIRED</span></div>
+          <div class="gate"><span class="gate__no">04</span><div><strong>Continuous background</strong><span>background tile = 0；semantic full-slide picture = 0</span></div><span class="gate__state">REQUIRED</span></div>
+          <div class="gate"><span class="gate__no">05</span><div><strong>Microsoft PowerPoint export</strong><span>exact final PPTX 真实打开、导出，记录引擎与字体</span></div><span class="gate__state">REQUIRED</span></div>
+          <div class="gate"><span class="gate__no">06</span><div><strong>Full-size visual sign-off</strong><span>逐页检查残留、换行、边缘、图标、层级、完成度</span></div><span class="gate__state">REQUIRED</span></div>
+          <div class="gate"><span class="gate__no">07</span><div><strong>Immutable round + learning</strong><span>不覆盖 accepted round；把根因和证据写回 improvement ledger</span></div><span class="gate__state">REQUIRED</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sources">
+      <div class="wrap sources__inner">
+        <div><h2>展示页依据</h2><p>内容取自当前仓库的工作流契约、重构边界、QA 规则与持续改进记录。</p></div>
+        <div class="source-links">
+          <a href="autopptskills/SKILL.md">autopptskills/SKILL.md</a>
+          <a href="autopptskills/references/workflow-architecture.md">workflow-architecture.md</a>
+          <a href="autopptskills/references/image-to-editable-pptx.md">image-to-editable-pptx.md</a>
+          <a href="autopptskills/references/qa-and-validation.md">qa-and-validation.md</a>
+          <a href="docs/strict-vectorized-ppt-workflow.md">strict-vectorized-ppt-workflow.md</a>
+          <a href="improvement/style-handbook.md">style-handbook.md</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="wrap"><span>AUTOPPT / WORKFLOW SHOWCASE</span><span>Source → ImageGen Master → Semantic Reconstruction → Gold Release</span></div></footer>
+
+  <script>
+    const stageData = {
+      0: { index: 'STAGE 00 / PREFLIGHT', state: 'GATE REQUIRED', title: '预检与 Run Identity', lead: '生成之前先确认环境和边界：来源、工具、空间、上一轮 accepted round，以及本次交付等级。', list: ['独立 run folder 与不可覆盖的 accepted baseline', 'ImageGen、OCR、Node/PptxGenJS、vector、PowerPoint 能力检查', 'Windows Office 渲染使用任务级 TEMP / TMP 空间'], code: 'preflight → capabilities → isolated run folder' },
+      1: { index: 'STAGE 01 / CONTENT TRUTH', state: 'GATE REQUIRED', title: '内容真值与证据地图', lead: '先回答“这句话从哪里来”，再讨论“这页怎么好看”。所有可见事实、数字、公式和表格值都要能回到 reviewed source。', list: ['稳定的 evidence ID 与 source boundary', 'Slide Manifest、exact-text whitelist、numeric whitelist', '没有来源或冲突的主张被标记为 blocked'], code: 'Slide Manifest → reviewed source → exact text / numbers' },
+      2: { index: 'STAGE 02 / VISUAL CONTRACT', state: 'GATE REQUIRED', title: '叙事与 Style Contract', lead: '把内容变成可生成的视觉约束：每页一个结论、一个主证据锚点，以及可复用但不僵化的页面节奏。', list: ['结论式标题与 page archetype', '颜色、字号、密度、CJK 约束与 negative constraints', '一页一份 self-contained prompt，禁止空背景再补卡片'], code: 'slide brief + style profile + prompt manifest' },
+      3: { index: 'STAGE 03 / VISUAL MASTER', state: 'PROVENANCE LOCKED', title: '一页一提示的 ImageGen 母版', lead: '每张 slide 先生成一个完整页面，保留视觉作者性。代码只负责接收、记录和后续组合，不替代首阶段视觉生产。', list: ['内建 ImageGen 完整页面输出', '记录 prompt、slide ID、输出路径、hash 与 ig_… / 已验证 exec-… provenance', '坏页只重生成坏页；不把后置 overlay 当成视觉修复'], code: 'direct_final_slide_imagegen → built-in provenance → current image hash' },
+      4: { index: 'STAGE 04 / IMAGE-ONLY PROOF', state: 'BLOCKING GATE', title: 'Image-only 证明', lead: '在谈编辑性之前，先证明视觉母版本身成立：图片版 PPTX 每页只有一张完整图片，没有脚本补上的文字或形状。', list: ['PPTX 页数、图片数和 manifest 对齐', 'image-only slide 的 text_boxes = 0、native_shapes = 0', '视觉内容、文字形状、证据锚点先完成全页检查'], code: 'imagegen-first-gate-report.json → image-only PPTX' },
+      5: { index: 'STAGE 05 / SEMANTIC ROUTING', state: 'REVIEWED ROUTE', title: '视觉解析与语义路由', lead: '不按像素追踪整页，而是先判断对象是什么、是否值得编辑、如何在不损伤背景的前提下取出。', list: ['component manifest：type、content_id、bbox、z-order、confidence', 'source_bbox / cleanup mask / layout_bbox 三套几何分工', '每个 rejected vector 都有 concrete reason 与 fallback'], code: 'verified master → component manifest → routing decisions' },
+      6: { index: 'STAGE 06 / EDITABLE COMPOSE', state: 'LAYER CONTRACT', title: '可编辑 PPTX 组合', lead: '可编辑不等于每个像素都变成 path。让最常改的文字和几何原生化，让复杂艺术保持高保真且可移动。', list: ['审核后的 measured plan：source_bbox 与 layout_bbox 分开', '普通文字 → native text；框线、箭头、节点 → native shape', '孤立扁平图标 → bounded OOXML freeform；复杂科学图像 → movable raster', '原生纯色背景也可作为连续背景；隐藏前景后不能留下语义残留'], code: 'measured plan → native text/shapes + bounded freeforms/assets + continuous background' },
+      7: { index: 'STAGE 07 / TECHNICAL QA', state: 'OFFICE REQUIRED', title: '技术门禁与 Office 导出', lead: '结构检查只是中间证据。最终必须由真实 Microsoft PowerPoint 打开并导出 exact final PPTX，再把渲染结果送入对比。', list: ['ZIP / slide count / layout / overflow / editability', 'exact-text 100%，replacement characters = 0', 'PowerPoint export 的引擎、字体、HRESULT 或成功证据被记录'], code: 'structural gates → PowerPoint export → comparison artifacts' },
+      8: { index: 'STAGE 08 / VISUAL SIGN-OFF', state: 'HUMAN / MODEL REVIEW', title: '逐页全尺寸视觉审查', lead: '把 source、preview、side-by-side、blend、heatmap 放在一起，检查那些结构指标捕捉不到的像素问题和设计问题。', list: ['残留字、重复文字、CJK 换行与强调色', '卡片边缘、分隔点、图表标签、SVG 轮廓与裁切', 'spectacle control 与 design completion 双向审查'], code: 'source + preview + side-by-side + blend + heatmap' },
+      9: { index: 'STAGE 09 / IMMUTABLE RELEASE', state: 'GOLD AGGREGATE', title: '不可变发布与经验回灌', lead: '发布的是一组可复核的证据，而不是一个孤立文件。局部改进生成新 round，已通过的页面继续被继承。', list: ['release_gate aggregate verdict = pass', 'accepted round、hash、报告、拒绝变体一起保存', '失败模式、根因、修复和证据写回 improvement ledger'], code: 'new round → baseline merge → release gate → ledger' }
+    };
+
+    const cards = [...document.querySelectorAll('.stage-card')];
+    const detailIndex = document.querySelector('#detailIndex');
+    const detailState = document.querySelector('#detailState');
+    const detailTitle = document.querySelector('#detailTitle');
+    const detailLead = document.querySelector('#detailLead');
+    const detailList = document.querySelector('#detailList');
+    const detailCode = document.querySelector('#detailCode');
+
+    function selectStage(id) {
+      const data = stageData[id];
+      if (!data) return;
+      cards.forEach(card => {
+        const active = card.dataset.stage === String(id);
+        card.classList.toggle('is-active', active);
+        card.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      detailIndex.textContent = data.index;
+      detailState.textContent = data.state;
+      detailTitle.textContent = data.title;
+      detailLead.textContent = data.lead;
+      detailList.innerHTML = data.list.map(item => `<li>${item}</li>`).join('');
+      detailCode.textContent = data.code;
+    }
+
+    cards.forEach(card => {
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.addEventListener('click', () => selectStage(card.dataset.stage));
+      card.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          selectStage(card.dataset.stage);
+        }
+      });
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.filter;
+        document.querySelectorAll('.filter-btn').forEach(item => {
+          const active = item === button;
+          item.classList.toggle('is-active', active);
+          item.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        cards.forEach(card => { card.hidden = filter !== 'all' && card.dataset.category !== filter; });
+        const activeCard = cards.find(card => !card.hidden);
+        if (activeCard) selectStage(activeCard.dataset.stage);
+      });
+    });
+
+    const painButtons = [...document.querySelectorAll('[data-pain-view]')];
+    const painCards = [...document.querySelectorAll('.pain-card')];
+    function setPainView(view) {
+      painButtons.forEach(button => {
+        const active = button.dataset.painView === view;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      painCards.forEach(card => {
+        card.querySelector('.pain-copy').textContent = card.dataset[view];
+      });
+    }
+    painButtons.forEach(button => button.addEventListener('click', () => setPainView(button.dataset.painView)));
+    setPainView('why');
+    selectStage('1');
+  </script>
+</body>
+</html>

@@ -1,5 +1,17 @@
 # Workflow history and retained decisions
 
+## User-approved preference update: 2026-09-20
+
+The user explicitly requested information-rich text-and-image slides, pale
+backgrounds, dark text, red emphasis, retained verified NSFC/university-defense
+references, clean reconstructable typography and geometry, and visual identity
+to the ImageGen master after reconstruction. These are approved workflow
+preferences, not claims of a newly successful deck or historical benchmark.
+See [approved-style-contract.md](approved-style-contract.md) for generation,
+reconstruction and acceptance prompts. Old sparse-text repair advice is retired;
+dark/minimal profiles now require explicit user selection. Pixel equality must
+be measured; unresolved visible mismatch blocks release.
+
 Use this reference when changing the skill, choosing between competing
 reconstruction methods, or diagnosing a failure that has appeared before. It
 records the reusable evidence from the full history, not one successful round.
@@ -133,6 +145,28 @@ The durable style interpretation is now:
 - every non-minimal profile must pass a design-completion review in addition to
   spectacle control;
 - a generic title-plus-card scaffold is a failure even when it is clean.
+
+### 7. The 11-slide thesis-defense run made measured reconstruction portable
+
+The latest thesis-defense delivery supplied the missing concrete bridge between
+the abstract layer contract and a reproducible editable PPTX. A complete
+ImageGen master was frozen and hash-bound first; a separate image-only PPTX
+served as the visual checkpoint. A reviewed measured plan then placed 176
+native text objects and 273 planned native geometry objects, traced only 25
+isolated flat icons into OOXML freeforms, and kept complex scene/science content
+as 28 bounded movable image assets in the final PPTX.
+
+The run also confirmed that a native solid-color slide fill satisfies the
+continuous-background contract. It does not need a full-slide raster image,
+and it is preferable when the field is flat. Long CJK titles and metrics were
+fixed by measured `layout_bbox`, explicit line breaks, stable font choices and
+`fit: shrink`, followed by an actual PowerPoint render—not by overlaying hidden
+or transparent proxy text.
+
+Retain the generic `measured-reconstruction.md` route and composer in the skill;
+keep the 11-slide geometry plan and page-specific repairs in the project run.
+The current release evidence is a floor for process quality, not a universal
+object-count target.
 
 ## Current decision precedence
 

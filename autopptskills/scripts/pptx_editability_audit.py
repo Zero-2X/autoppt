@@ -40,6 +40,27 @@ def _picture_role(name: str) -> str:
     return "semantic-raster"
 
 
+def visible_text_reasons(shape, slide_w: int, slide_h: int) -> list[str]:
+    """Reject proxy text; presence in slide XML is not visible editability."""
+    reasons = []
+    if (shape.left < 0 or shape.top < 0 or shape.left + shape.width > slide_w + 12700
+            or shape.top + shape.height > slide_h + 12700):
+        reasons.append("outside-slide")
+    if shape.width <= 0 or shape.height <= 0:
+        reasons.append("empty-frame")
+    if "proxy" in shape.name.lower():
+        reasons.append("proxy-object")
+    for p in shape.text_frame.paragraphs:
+        for run in p.runs:
+            if not run.text.strip():
+                continue
+            if run.font.size is not None and run.font.size.pt < 5:
+                reasons.append("tiny-text")
+            if any(int(a.get("val", "100000")) == 0 for a in run._r.xpath(".//a:alpha")):
+                reasons.append("transparent-text")
+    return sorted(set(reasons))
+
+
 def _xml_text_evidence(path: Path) -> dict:
     xml_text = ""
     with zipfile.ZipFile(path) as zf:
@@ -77,6 +98,7 @@ def audit(path: Path, full_slide_threshold: float) -> dict:
         "full_slide_pictures": 0,
         "semantic_full_slide_pictures": 0,
         "text_boxes": 0,
+        "invalid_text_objects": 0,
         "native_shapes": 0,
         "connectors": 0,
         "text_items": 0,
@@ -103,6 +125,7 @@ def audit(path: Path, full_slide_threshold: float) -> dict:
             "full_slide_pictures": 0,
             "semantic_full_slide_pictures": 0,
             "text_boxes": 0,
+            "invalid_text_objects": 0,
             "native_shapes": 0,
             "connectors": 0,
             "picture_area_ratio_sum": 0.0,
@@ -134,7 +157,9 @@ def audit(path: Path, full_slide_threshold: float) -> dict:
                 is_full = area >= full_slide_threshold
                 picture_role = _picture_role(name)
                 is_background_tile = picture_role == "pixel-anchored-background-tile"
-                is_background = _is_background_name(name) or is_background_tile or (is_full and shape_index == 1)
+                # Position in z-order cannot prove that an image is non-semantic.
+                # Named backgrounds still require the separate layer review.
+                is_background = _is_background_name(name) or is_background_tile
                 is_vector = name.lower().startswith("vector-svg::")
                 if is_background:
                     item["background_pictures"] += 1
@@ -169,6 +194,13 @@ def audit(path: Path, full_slide_threshold: float) -> dict:
                 item["connectors"] += 1
                 totals["connectors"] += 1
             elif shape_type == MSO_SHAPE_TYPE.TEXT_BOX or text.strip():
+                invalid = visible_text_reasons(shape, slide_w, slide_h)
+                if invalid:
+                    item["invalid_text_objects"] += 1
+                    totals["invalid_text_objects"] += 1
+                    object_info["visibility_errors"] = invalid
+                    item["objects"].append(object_info)
+                    continue
                 item["text_boxes"] += 1
                 totals["text_boxes"] += 1
                 item["text_area_ratio_sum"] += area
@@ -216,7 +248,15 @@ def audit(path: Path, full_slide_threshold: float) -> dict:
     score = round(100 * (0.60 * object_editability + 0.25 * (1 - semantic_picture_pressure) + 0.15 * text_signal), 1)
 
     picture_area = max(1e-9, totals["picture_area_ratio_sum"])
-    native_text_coverage = 1.0 if totals["text_boxes"] else 0.0
+    # Every visible semantic text object in this deck is native PowerPoint text.
+    # Keep this as a hard, machine-checkable signal: the release gate must not
+    # infer editability from a few proxy boxes or from an object-count ratio.
+    visible_text_objects = totals["text_boxes"] + totals["invalid_text_objects"]
+    native_text_coverage = (
+        totals["text_boxes"] / max(1, visible_text_objects)
+        if visible_text_objects
+        else 0.0
+    )
     native_shape_coverage = (
         (totals["native_shapes"] + totals["connectors"])
         / max(1, totals["native_shapes"] + totals["connectors"] + totals["convertible_vectors"])
@@ -251,6 +291,8 @@ def audit(path: Path, full_slide_threshold: float) -> dict:
             "tier_adjusted_object_ratio": round(object_editability, 4),
             "semantic_picture_pressure": round(semantic_picture_pressure, 4),
             "native_text_coverage": round(native_text_coverage, 4),
+            "visible_text_objects": visible_text_objects,
+            "coverage_requires": "all visible semantic text must be native and in-bounds",
             "native_shape_coverage": round(native_shape_coverage, 4),
             "complex_raster_exception_ratio": round(complex_raster_exception_ratio, 4),
             "full_slide_raster_shortcut": full_slide_raster_shortcut,
@@ -287,6 +329,8 @@ def main() -> int:
     report = audit(Path(args.pptx), args.full_slide_threshold)
     failures = []
     totals = report["totals"]
+    if totals["invalid_text_objects"]:
+        failures.append("invalid_text_objects>0")
     if totals["text_boxes"] < args.min_text_boxes:
         failures.append(f"text_boxes<{args.min_text_boxes}")
     if totals["native_shapes"] + totals["connectors"] < args.min_native_shapes:

@@ -360,7 +360,7 @@ def run_real_stage45_imagegen(stage45_dir: Path) -> None:
 def run_ppt(
     topic_dir: Path,
     *,
-    mock: bool = True,
+    mock: bool = False,
     force: bool = False,
     style_profile: str | None = None,
     presentation_profile: str = "innovation_competition_defense",
@@ -650,7 +650,15 @@ def run_ppt(
             ]
         ),
     )
-    status = "completed" if audit["verdict"] == "pass" else "blocked"
+    # Mock pages are generated with local drawing code solely to exercise
+    # plumbing. They are never formal output, even if their structural audit
+    # passes. Keep the diagnostic artifact but fail closed at the workflow
+    # boundary so a script-rendered slide cannot be promoted accidentally.
+    status = "completed" if audit["verdict"] == "pass" and not mock else "blocked"
+    if mock:
+        audit["formal_output_eligible"] = False
+        audit.setdefault("issues", []).append("mock_output_is_not_formal_imagegen")
+        audit.setdefault("warnings", []).append("code-rendered mock pages are structural diagnostics only")
     update_workspace_state(
         topic_dir,
         status,
@@ -675,6 +683,8 @@ def run_ppt(
         "speaker_notes": defense_materials,
         "presentation_reports": reports,
         "audit": audit,
+        "formal_output_eligible": bool(status == "completed" and not mock),
+        "blocking_reason": "mock_output_is_not_formal_imagegen" if mock else "",
     }
 
 
@@ -682,7 +692,7 @@ def regenerate_ppt_slide(
     topic_dir: Path,
     slide_id: str,
     *,
-    mock: bool = True,
+    mock: bool = False,
     presentation_profile: str = "innovation_competition_defense",
     style_profile: str | None = None,
     imagegen_route: str | None = None,

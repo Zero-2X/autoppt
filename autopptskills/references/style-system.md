@@ -1,5 +1,15 @@
 # Evidence-led presentation style system
 
+## Current approved defaults
+
+Read [approved-style-contract.md](approved-style-contract.md) before using the
+catalog below. Use medium-high, evidence-rich text-and-image density, pale
+backgrounds, dark text, and restrained red emphasis. Older low-density or
+orange/copper accent examples below are historical profile descriptions and do
+not override the approved defaults. Dark and minimal profiles are retained only
+for explicit user selection; the viewing environment alone is not permission
+to switch. Preserve official-source archetypes and their source boundaries.
+
 Use this reference when choosing an ImageGen direction, writing a deck-wide
 style contract, generating several visual variants, or repairing a deck that is
 either theatrical or visibly under-designed.

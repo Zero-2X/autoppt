@@ -101,7 +101,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--presentation-profile", choices=tuple(presentation_profile_choices()), default="innovation_competition_defense")
     parser.add_argument("--style-profile", default="", help="Optional autopptskills style profile override.")
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--mock", action="store_true", help="Structural smoke only; never a formal deliverable.")
+    mode.add_argument("--mock", action="store_true", help="Structural smoke only; always blocked from formal delivery.")
     mode.add_argument("--real", action="store_true", help="Consume verified Codex built-in image_gen outputs only.")
     parser.add_argument("--force", action="store_true", help="Rebuild the Stage4.5 workspace.")
     parser.add_argument("--slide-id", default="", help="Regenerate only this slide asset and preserve the accepted deck.")

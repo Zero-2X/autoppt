@@ -22,6 +22,9 @@ REVIEW_CHECKS = (
 DESIGN_REVIEW_CHECKS = (
     "spectacle_control",
     "design_completion",
+    "information_density",
+    "restrained_style",
+    "master_visual_fidelity",
 )
 INSTITUTIONAL_REVIEW_CHECKS = ("institutional_identity_absence",)
 
@@ -234,6 +237,30 @@ class ReleaseGateTest(unittest.TestCase):
                 "spectacle_control",
                 " ".join(report["gates"]["visual_review"]["errors"]),
             )
+
+    def test_design_quality_blocks_missing_or_failed_master_fidelity(self) -> None:
+        for fidelity in (None, "fail"):
+            with self.subTest(fidelity=fidelity), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                arguments = self.prepare(root)
+                review_path = root / "visual-review.json"
+                review = json.loads(review_path.read_text(encoding="utf-8"))
+                for slide in review["slides"]:
+                    slide["checks"].update({name: "pass" for name in DESIGN_REVIEW_CHECKS})
+                if fidelity is None:
+                    del review["slides"][0]["checks"]["master_visual_fidelity"]
+                else:
+                    review["slides"][0]["checks"]["master_visual_fidelity"] = fidelity
+                write_json(review_path, review)
+                subprocess.run(
+                    [sys.executable, *arguments, "--require-design-quality"],
+                    capture_output=True, text=True,
+                )
+                report = json.loads((root / "release.json").read_text(encoding="utf-8"))
+                self.assertNotEqual(report["verdict"], "pass")
+                self.assertIn("master_visual_fidelity", " ".join(
+                    report["gates"]["visual_review"]["errors"]
+                ))
 
     def test_required_design_quality_accepts_explicit_checks(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

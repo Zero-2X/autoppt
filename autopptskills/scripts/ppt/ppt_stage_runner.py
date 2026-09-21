@@ -20,7 +20,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run AutoSearch PPT PPT/imagegen adapter.")
     parser.add_argument("topic_dir", help="Topic directory, such as sample/topic_xx")
     mode = parser.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--mock", action="store_true", help="Structural smoke only; never a formal deliverable.")
+    mode.add_argument("--mock", action="store_true", help="Structural smoke only; always blocked from formal delivery.")
     mode.add_argument("--real", action="store_true", help="Consume verified built-in image_gen outputs only.")
     parser.add_argument("--force", action="store_true", help="Rebuild PPT workspace.")
     parser.add_argument(

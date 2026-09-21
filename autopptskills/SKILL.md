@@ -5,6 +5,20 @@ description: Create, reconstruct, audit, and release source-grounded PowerPoint 
 
 # AutoPPTSkills
 
+## User-approved style contract
+
+Before content planning, prompt authoring, reconstruction, or visual sign-off,
+read [approved-style-contract.md](references/approved-style-contract.md).
+The approved defaults are information-rich text-and-image pages, pale
+backgrounds, dark text, restrained red emphasis, and clean measurable text and
+geometry. Retain verified NSFC/university reference archetypes. Do not select
+dark/minimal profiles without explicit user direction or truncate reviewed
+supporting content. Reconstruct the frozen ImageGen master without visible
+changes, with native ordinary text/simple shapes and bounded scientific images.
+New Gold design review must pass information_density, restrained_style, and
+master_visual_fidelity; unresolved visible differences block release.
+These approved preferences supersede older profile defaults.
+
 Produce a presentation whose claims are traceable, whose visual master is
 generated slide by slide with built-in ImageGen, whose editable version has
 honest semantic layers, and whose exact final PPTX has passed real PowerPoint
@@ -27,6 +41,20 @@ A run is complete only when the requested delivery tier is proven:
 Do not claim a higher tier from lower-tier evidence. A mock run proves only
 structural plumbing. Missing built-in ImageGen, Microsoft PowerPoint rendering,
 or required visual review makes the relevant tier `blocked`, not `pass`.
+
+This is fail-closed policy: every formal run must have one completed Codex
+built-in `image_gen` call and a matching accepted built-in provenance record for
+every slide before PPTX assembly or editable reconstruction. Depending on the
+host, the record may use a legacy `ig_...` id or a validated Codex `exec-...`
+host id together with built-in backend, direct-final-slide mode, completed
+status, and the current image hash. Code-rendered mock pages
+are diagnostic artifacts only; they must remain `blocked` and cannot be
+promoted to an image-only, editable, or Gold deliverable.
+
+The boundary is explicit: code may place an already verified ImageGen page in
+an image-only PPTX, or reconstruct reviewed text/simple geometry after the
+ImageGen-first gate. Code may not draw, template, screenshot, or synthesize the
+first-stage page, and a missing ImageGen page must stop the run.
 
 ## Decision precedence
 
@@ -119,7 +147,7 @@ another backend on this route.
 For every pending slide:
 
 1. Make one built-in `image_gen` call with that slide's complete prompt.
-2. Ingest the returned `ig_...` result through
+2. Ingest the returned built-in result (`ig_...` or a validated host record) through
    `autosearch/ppt/builtin_imagegen_handoff.py` or the equivalent repository
    handoff.
 3. Record prompt, slide ID, output path, current file hash, backend identity,
@@ -140,8 +168,10 @@ backends. Mock images remain visibly marked structural fixtures.
 - Assemble only the current generated slide images; add no script-generated
   text boxes or shapes.
 - Require one full-slide image per slide and zero extra semantic objects.
-- Run the ImageGen-first gate against the current image hashes and require
-  strong `ig_...` IDs for a real delivery.
+- Run the ImageGen-first gate against the current image hashes. Require
+  `--require-strong-ig-id` when the host exposes legacy `ig_...` ids;
+  otherwise accept only the validated built-in host-record route described
+  above.
 - Review all slides for content truth, malformed text, visual hierarchy,
   consistency, and profile completion before reconstruction.
 
@@ -152,6 +182,16 @@ editable objects. Every routed component records its semantic type,
 `content_id`, normalized bbox, z-order, render type, confidence, editability,
 and provenance. `content_id` must resolve to reviewed Slide Manifest content
 when the component carries semantic text.
+
+When a page needs a deterministic, high-fidelity reconstruction from measured
+source geometry, use `references/measured-reconstruction.md` and
+`scripts/compose_measured_reconstruction.py`. The reviewed plan must keep
+`source_bbox` and `layout_bbox` separate, use explicit line breaks and
+`fit: shrink`, validate source/crop dimensions, and record source/asset hashes.
+Only isolated flat low-complexity icons may take the `native-trace` route to an
+OOXML freeform; complex scientific artwork remains a bounded movable image with
+a documented reason. A native `background_color` is a valid continuous
+background, so never manufacture a full-slide bitmap for a flat field.
 
 | Content | Preferred representation |
 | --- | --- |
@@ -215,6 +255,9 @@ qa/imagegen-first-gate-report.json
 component_manifest.json                 # editable route
 deck-high-fidelity.json                 # editable route
 qa/compose-report.json                  # editable route
+measured-plan.json                      # measured reconstruction route
+asset-provenance.json                   # source/crop hashes and route reasons
+native-traces.json                      # bounded OOXML contour evidence
 qa/editability-report.json              # Gold route
 qa/exact-text-report.json               # Gold route
 qa/layer-review.json                    # Gold route
@@ -234,11 +277,17 @@ python autopptskills\scripts\check_editable_backends.py --json-out <run-dir>\qa\
 # Reconstruct one verified ImageGen master
 python autopptskills\scripts\reconstruct_imagegen_slide.py <slide.png> <run-dir> --imagegen-manifest <image-prompts.json> --slide-manifest <slide-manifest.json> --force-16x9
 
+# Reject proxy text and non-native ordinary semantics
+python autopptskills\scripts\semantic_editability_gate.py <deck-high-fidelity.json> --expected-slides <N> --out <run-dir>\qa\semantic-editability.json
+
 # Validate the semantic bridge
 python autopptskills\scripts\component_manifest_qa.py <run-dir>\component_manifest.json --json-out <run-dir>\qa\component-manifest-qa.json
 
 # Validate final semantic layers
 python autopptskills\scripts\layer_contract_gate.py <deck-high-fidelity.json> --pptx <final.pptx> --review <qa\layer-review.json> --out <qa\layer-contract-report.json>
+
+# Deterministic measured reconstruction (after ImageGen-first review)
+python autopptskills\scripts\compose_measured_reconstruction.py <measured-plan.json> --out-dir <round-dir>
 ```
 
 Read `references/qa-and-validation.md` for the complete release command set and
@@ -271,11 +320,15 @@ report schemas.
 - `references/style-system.md`: profile selection and bidirectional design-quality gate.
 - `references/official-source-archetypes.md`: source/license tiers and identity boundaries.
 - `references/image-to-editable-pptx.md`: detailed reconstruction procedure and schemas.
+- `references/measured-reconstruction.md`: reviewed measurement plan, native
+  freeform trace route, bounded raster exceptions, and reproducible composer.
 - `references/method-selection.md`: OCR/vector/raster/native routing.
 - `references/harness-engineering.md`: state machine, iteration ledger, and evidence gates.
 - `references/qa-and-validation.md`: complete validation and release commands.
 - `references/production-lessons.md`: retained practices and rejected approaches.
 - `references/history-and-decisions.md`: evidence history and global-rule change policy.
+- `scripts/semantic_editability_gate.py`: rejects hidden/transparent proxy text,
+  rasterized ordinary text, non-native simple geometry, and incomplete slide coverage.
 
 Keep work focused on the highest unmet gate. Do not call a deck complete until
 the requested tier is proven by its own artifacts and exact final-state checks.

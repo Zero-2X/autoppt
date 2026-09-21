@@ -28,6 +28,9 @@ BASE_REVIEW_CHECKS = (
 DESIGN_REVIEW_CHECKS = (
     "spectacle_control",
     "design_completion",
+    "information_density",
+    "restrained_style",
+    "master_visual_fidelity",
 )
 INSTITUTIONAL_REVIEW_CHECKS = ("institutional_identity_absence",)
 

@@ -18,6 +18,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("deck")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--expected-slides", type=int)
     args = ap.parse_args()
     deck_path = Path(args.deck).resolve()
     deck = json.loads(deck_path.read_text(encoding="utf-8-sig"))
@@ -63,7 +64,7 @@ def main() -> int:
         "totals": {"native_texts": sum(x["native_texts"] for x in slides), "native_shapes": sum(x["native_shapes"] for x in slides), "raster_text_exceptions": sum(x["raster_text_exceptions"] for x in slides)},
         "errors": errors,
         "warnings": warnings,
-        "verdict": "pass" if not errors and len(slides) == 39 else "fail",
+        "verdict": "pass" if not errors and slides and (args.expected_slides is None or len(slides) == args.expected_slides) else "fail",
         "slides": slides,
     }
     out = Path(args.out).resolve(); out.parent.mkdir(parents=True, exist_ok=True); out.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

@@ -8,12 +8,14 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from .approved_style import APPROVED_STYLE_PROMPT
     from .style_contracts import (
         identity_prompt_guard,
         merge_style_contract,
         validate_identity_text_exceptions,
     )
 except ImportError:  # pragma: no cover - supports direct script execution.
+    from approved_style import APPROVED_STYLE_PROMPT
     from style_contracts import (
         identity_prompt_guard,
         merge_style_contract,
@@ -63,7 +65,8 @@ def _prompt(deck: dict[str, Any], slide: dict[str, Any]) -> str:
         f"Design completion: {deck['design_completion']}\n"
         f"Quality boundary: {deck['quality_guardrails']}\n"
         f"{reference_boundary}"
-        f"Information density: {slide.get('density_target', 'balanced: one message, one dominant visual, up to three supporting regions')}\n"
+        f"Information density: {slide.get('density_target', 'medium-high: complete reviewed evidence and explanatory text paired with visuals')}\n"
+        f"{APPROVED_STYLE_PROMPT}\n"
         "Exact on-slide text, render verbatim and do not invent additional labels:\n"
         f"{exact_text}\n"
         f"Visual composition: {slide['visual_brief']}\n"
@@ -81,7 +84,7 @@ def _prompt(deck: dict[str, Any], slide: dict[str, Any]) -> str:
         "no random English, no placeholder text, no gibberish, no text outside the slide, "
         "no blank template, no later local renderer substitute.\n"
         "Readability: all main Chinese text must remain legible on a projected screen; "
-        "titles stay on one line; dense evidence uses compact but readable typography. "
+        "titles use deliberate line breaks when needed; dense evidence uses compact but readable typography. "
         "The page must be neither overdecorated nor under-designed for the selected profile."
     )
 
@@ -137,7 +140,7 @@ def build(plan: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
             "variant_paths": [f"assets/generated/{slide_id}-v1.png"],
             "exact_text": slide["exact_text"],
             "text_density_mode": slide.get("text_density_mode", "dense"),
-            "density_target": slide.get("density_target", "80-140 Chinese characters plus 3-6 evidence points"),
+            "density_target": slide.get("density_target", "medium-high: complete reviewed evidence and explanatory text paired with visuals"),
             "style_profile": deck["style_profile"],
             "style_contract_summary": deck["style_contract"],
             "design_density": deck["design_density"],

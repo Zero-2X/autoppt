@@ -1,5 +1,12 @@
 # Full-Slide Imagegen PPT Workflow
 
+Apply [approved-style-contract.md](approved-style-contract.md) to planning,
+every self-contained slide prompt, image QA, and regeneration. Carry all
+necessary reviewed support text into exact_text; do not truncate by item count.
+Default to medium-high information density, pale background, dark text and red
+emphasis. Use clean text regions and measurable geometry while retaining
+scientific detail. Source material must support any added explanation.
+
 Use this for image-based PPTs where each page is a complete generated slide image.
 
 ## Hard Gate
@@ -60,11 +67,11 @@ Each slide prompt must stand alone. Include:
 - acceptance criteria
 - regeneration hint
 
-Keep Chinese slide text short and explicit. Use larger typography and fewer
-labels rather than paragraphs. If the model produces unreadable Chinese,
-shorten the copy and regenerate the whole slide image, but preserve the selected
-profile's primary evidence anchor and design finish. Do not solve a text defect
-by collapsing a non-minimal slide into a bare template.
+Keep Chinese sentences concise while preserving the complete reviewed argument.
+Use grouped text, explicit line breaks and readable typography beside figures.
+If Chinese text is unreadable, repair grouping and text-region sizes and
+regenerate the full slide. Revise wording only through content planning and the
+exact-text whitelist; do not discard explanation or reduce the page to labels.
 
 ## Output Policy
 

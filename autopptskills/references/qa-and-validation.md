@@ -1,5 +1,15 @@
 # QA And Validation
 
+For new releases, apply [approved-style-contract.md](approved-style-contract.md).
+With --require-design-quality, every slide must explicitly pass
+information_density (complete evidence with explanatory text),
+restrained_style (approved palette and clean typography/geometry), and
+master_visual_fidelity (no visible mismatch against its frozen ImageGen master).
+Existing reviews lacking these fields need a fresh review; do not auto-fill pass.
+Real PowerPoint renders, full-size comparisons and local detail inspection are
+required. Difference metrics cannot excuse visible errors or prove pixel equality
+without an actual pixel comparison.
+
 Use this before claiming a deck or skill run is complete.
 
 ## Skill Package Validation
@@ -45,9 +55,10 @@ Run the blocking provenance and structure gate after image-only assembly:
 python autopptskills\scripts\verify_imagegen_first_gate.py <run-dir> --pptx <image-only.pptx> --report <run-dir>\qa\imagegen-first-gate-report.json
 ```
 
-When built-in ImageGen produced the pages, add `--require-strong-ig-id`. This
-requires every current PNG hash to match an `ig_...` rollout record and the
-manifest backend to be the built-in capability.
+When built-in ImageGen produced the pages, add `--require-strong-ig-id` when
+the host exposes `ig_...` rollout ids. On hosts that expose `exec-...`, the
+normal gate still requires the built-in backend/provenance, direct-final-slide
+mode, completed status, and matching current hash.
 
 Verify:
 

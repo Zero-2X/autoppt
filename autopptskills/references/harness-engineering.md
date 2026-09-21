@@ -44,7 +44,9 @@ python autopptskills\scripts\verify_imagegen_first_gate.py <run-dir> --pptx <ima
 Pass only when:
 
 - every current `Sxx.png` hash matches accepted ImageGen provenance
-- strong mode matches every hash to an `ig_...` generation ID
+- strong mode matches every hash to an `ig_...` generation ID when that
+  legacy id is available; Codex hosts that expose `exec-...` use the validated
+  built-in backend/provenance/mode/status record instead
 - every prompt contracts for one complete final PPT page image
 - every image-only PPT slide contains exactly one full-slide picture
 - image-only PPT totals are zero text boxes and zero native shapes

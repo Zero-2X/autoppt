@@ -305,6 +305,7 @@ def has_full_slide_prompt_contract(slide: dict[str, Any]) -> bool:
         phrase in prompt
         for phrase in (
             "complete final 16:9 powerpoint slide image, one page only",
+            "complete final powerpoint slide image",
             "whole output must be one finished slide page",
             "complete final ppt page image",
         )

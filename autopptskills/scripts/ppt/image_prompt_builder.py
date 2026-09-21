@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from autopptskills.scripts.approved_style import APPROVED_STYLE_PROMPT
     from autopptskills.scripts.style_contracts import (
         get_style_profile,
         identity_prompt_guard,
@@ -17,6 +18,7 @@ except ImportError:  # pragma: no cover
         if (parent / "autopptskills" / "scripts" / "style_contracts.py").exists():
             sys.path.insert(0, str(parent))
             break
+    from autopptskills.scripts.approved_style import APPROVED_STYLE_PROMPT
     from autopptskills.scripts.style_contracts import (
         get_style_profile,
         identity_prompt_guard,
@@ -79,7 +81,7 @@ def slide_text_items(slide: dict[str, Any]) -> list[str]:
         str(slide.get("one_sentence_message") or slide.get("core_question", "")).strip(),
     ]
     support = slide.get("supporting_items") or slide.get("must_say", [])
-    items.extend(str(item).strip() for item in support[:4])
+    items.extend(str(item).strip() for item in support)
     return [item for item in items if item]
 
 
@@ -157,7 +159,10 @@ Evidence anchors:
 Exact On-Slide Text:
 Title: {title}
 Main line: {message}
-Use only short Chinese phrases from the required talking points. Avoid paragraphs.
+Render the reviewed title, main line, and all necessary talking points verbatim. Use grouped readable short sentences and explicit line breaks; preserve explanation, units, conditions, and conclusions.
+
+Approved Workflow Style:
+{APPROVED_STYLE_PROMPT}
 
 Style Contract:
 Profile: {profile_id}. {style['style_contract']}
@@ -191,7 +196,7 @@ Acceptance Criteria:
 The image itself is a complete final slide page. Judges can understand the point within five seconds. The page has one clear hierarchy, feels complete for the selected profile, and is neither decorative spectacle nor a blank or generic template scaffold.
 
 Regeneration Plan:
-If text is unreadable, shorten the copy, enlarge fonts, and recompose the full page. Preserve the profile's required evidence anchor and design finish instead of collapsing a non-minimal style into a bare layout."""
+If text is unreadable, repair grouping, explicit line breaks and text-region sizes, then regenerate the full page while retaining reviewed evidence and explanatory text. Return to content planning if wording must change; never reduce the page to title plus labels."""
 
 
 def build_image_prompts(
@@ -247,7 +252,7 @@ def build_image_prompts(
                 "final_path": f"assets/slides/{slide_id}.png",
                 "variant_paths": [f"assets/generated/{slide_id}-v1.png"],
                 "exact_text": slide_text_items(slide),
-                "text_density_mode": "sparse" if index in {1, len(slides)} else "balanced",
+                "text_density_mode": "information-rich-readable",
                 "style_profile": style["style_profile"],
                 "style_contract_summary": style["style_contract"],
                 "design_density": style["design_density"],
@@ -257,7 +262,7 @@ def build_image_prompts(
                 "style_reference": style["style_reference"],
                 "layout_blueprint_summary": slide.get("visual_hint", ""),
                 "core_question": slide.get("core_question", ""),
-                "supporting_items": list(slide.get("supporting_items") or slide.get("must_say") or [])[:3],
+                "supporting_items": list(slide.get("supporting_items") or slide.get("must_say") or []),
                 "claim_ids": list(slide.get("claim_ids") or []),
                 "evidence_ids": list(slide.get("evidence_ids") or []),
                 "speaker_duration_seconds": int(slide.get("speaker_duration_seconds") or slide.get("duration_seconds") or 60),
@@ -278,7 +283,7 @@ def build_image_prompts(
                     "no unsupported facts",
                 ],
                 "expected_output": "complete final PPT page image",
-                "regeneration_hint": "simplify layout and enlarge text if readability fails",
+                "regeneration_hint": "Repair grouping, line breaks, text regions and readability while preserving reviewed scientific information; never reduce to title plus labels.",
                 "retry_prompt_delta": "",
                 "source_slide": slide,
             }

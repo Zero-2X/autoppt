@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import hashlib
 import json
 import os
 import re
@@ -37,26 +38,136 @@ def _collect_strings(value: Any):
         yield value
 
 
+def _iter_dicts(value: Any):
+    if isinstance(value, dict):
+        yield value
+        for child in value.values():
+            yield from _iter_dicts(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _iter_dicts(child)
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _builtin_provenance_record(record: dict[str, Any]) -> bool:
+    imagegen_id = str(
+        record.get("id")
+        or record.get("imagegen_id")
+        or record.get("generation_id")
+        or ""
+    ).strip().lower()
+    backend = str(record.get("backend") or record.get("imagegen_backend") or "").strip().lower()
+    provenance = str(record.get("provenance_kind") or record.get("provenance") or "").strip().lower()
+    generation_mode = str(record.get("generation_mode") or "").strip()
+    status = str(record.get("status") or record.get("provenance_status") or "").strip().lower()
+    # The Codex desktop host currently records completed built-in calls with
+    # ``exec-...`` item ids rather than the older ``ig_...`` ids.  Accept the
+    # host id only when the independent backend/provenance fields still prove
+    # this was a built-in direct final-slide generation.
+    host_generation_id = imagegen_id.startswith("exec-")
+    strong_generation_id = imagegen_id.startswith("ig_")
+    return (
+        (strong_generation_id or host_generation_id)
+        and generation_mode == "direct_final_slide_imagegen"
+        and status in {"generated", "completed"}
+        and (
+            backend in {"builtin", "builtin_image_gen"}
+            or provenance in {"builtin-imagegen", "builtin_image_gen", "image_generation_call"}
+            or provenance.startswith("builtin-")
+        )
+    )
+
+
+def _manifest_candidates(manifest_path: Path, source: Path) -> list[Path]:
+    """Find the prompt pack plus adjacent built-in provenance sidecars."""
+    stage_dir = manifest_path.parent
+    if manifest_path.name.lower() in {"asset-manifest.json", "imagegen_manifest.json"}:
+        stage_dir = manifest_path.parent.parent
+    stem = source.stem
+    candidates = [
+        manifest_path,
+        stage_dir / "references" / "asset-manifest.json",
+        stage_dir / "builtin-imagegen-handoff.json",
+        stage_dir / "assets" / "generated" / f"{stem}-pipeline.json",
+        stage_dir / "assets" / "slides" / f"{stem}.imagegen_manifest.json",
+        stage_dir / "assets" / "slides" / f"{stem}.image_generation_metadata.json",
+    ]
+    unique: list[Path] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        key = str(resolved).lower()
+        if key not in seen:
+            seen.add(key)
+            unique.append(resolved)
+    return unique
+
+
 def _verify_imagegen_manifest(manifest_path: Path | None, source: Path) -> tuple[bool, str | None]:
     if manifest_path is None:
         return False, "imagegen manifest was not supplied"
     if not manifest_path.exists():
         return False, f"imagegen manifest not found: {manifest_path}"
-    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    try:
+        source_digest = _sha256_file(source)
+    except OSError as exc:
+        return False, f"source image could not be hashed: {exc.__class__.__name__}"
+    candidates = _manifest_candidates(manifest_path.resolve(), source.resolve())
+    loaded: list[tuple[Path, Any]] = []
+    for candidate in candidates:
+        if not candidate.exists():
+            continue
+        try:
+            loaded.append((candidate, json.loads(candidate.read_text(encoding="utf-8-sig"))))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            continue
+    if not loaded:
+        return False, f"imagegen manifest could not be read: {manifest_path}"
     normalized_source = source.resolve()
     source_name = source.name.lower()
     source_stem = source.stem.lower()
-    for value in _collect_strings(data):
-        normalized = value.replace("\\", "/").lower()
-        if source_name in normalized or normalized.endswith(f"/{source_stem}.png"):
-            return True, None
-        try:
-            candidate = Path(value)
-            if candidate.is_absolute() and candidate.resolve() == normalized_source:
-                return True, None
-        except (OSError, ValueError):
-            pass
-    return False, f"source image {source.name} is not referenced by the imagegen manifest"
+    source_referenced = False
+    strong_match = False
+    for _path, data in loaded:
+        for value in _collect_strings(data):
+            normalized = value.replace("\\", "/").lower()
+            if source_name in normalized or normalized.endswith(f"/{source_stem}.png"):
+                source_referenced = True
+            try:
+                candidate = Path(value)
+                if candidate.is_absolute() and candidate.resolve() == normalized_source:
+                    source_referenced = True
+            except (OSError, ValueError):
+                pass
+        for record in _iter_dicts(data):
+            if not _builtin_provenance_record(record):
+                continue
+            record_digest = str(
+                record.get("sha256")
+                or record.get("image_sha256")
+                or record.get("output_sha256")
+                or ""
+            ).strip().lower()
+            output_text = " ".join(_collect_strings(record)).replace("\\", "/").lower()
+            if record_digest and record_digest == source_digest:
+                strong_match = True
+            elif source_name in output_text or output_text.endswith(f"/{source_stem}.png"):
+                strong_match = True
+    if not source_referenced:
+        return False, f"source image {source.name} is not referenced by the imagegen manifest"
+    if not strong_match:
+        return False, (
+            f"source image {source.name} lacks matching strong ig_ Codex built-in "
+            "image_gen provenance"
+        )
+    return True, None
 
 
 def _manifest_exact_text(manifest_path: Path | None, slide_stem: str) -> list[str]:
@@ -182,7 +293,9 @@ def _select_texts(analysis: dict[str, Any], height: int) -> tuple[list[dict[str,
         is_large_normal_text = size >= 16.0 and confidence >= 0.75
         is_bottom_summary = y >= height * 0.77 and size >= 16.0 and confidence >= 0.60
         is_prominent = box_height >= height * 0.045 and confidence >= 0.72
-        inside_photo_body = height * 0.38 <= y <= height * 0.76 and not manifest_matched
+        # A vertical band is not evidence of a photograph. Only an explicitly
+        # reviewed asset region may retain embedded text as a raster exception.
+        inside_photo_body = bool(item.get("reviewed_embedded_text"))
         # Reviewed source/slide-manifest text may explicitly opt into native
         # reconstruction even when OCR classifies it as stylized art text or
         # low-confidence.  This is the safe escape hatch for titles and
@@ -202,14 +315,27 @@ def _apply_overrides(analysis: dict[str, Any], override_path: Path | None) -> di
     if override_path is None:
         return analysis
     overrides = json.loads(override_path.read_text(encoding="utf-8"))
-    drop_ids = set(str(value) for value in overrides.get("drop_ids", []))
-    replacements = {str(key): str(value) for key, value in overrides.get("replace_text", {}).items()}
+    slide_key = str(analysis.get("slide_id") or "")
+
+    def scoped(name: str, default: Any) -> Any:
+        value = overrides.get(name, default)
+        if isinstance(value, dict):
+            if slide_key in value:
+                return value[slide_key]
+            # List-valued override fields may be keyed by slide ID.  A slide
+            # without an entry gets an empty list; extending the analysis with
+            # the mapping itself would otherwise append strings such as S06.
+            if isinstance(default, list):
+                return default
+        return value
+
+    drop_ids = set(str(value) for value in scoped("drop_ids", []))
+    replacements = {str(key): str(value) for key, value in scoped("replace_text", {}).items()}
     text_updates = overrides.get("text_updates", {})
     # Deck-level reviewed overrides may be keyed by slide_id.  Accepting that
     # form keeps one provenance file for the whole deck while preserving the
     # existing single-slide override contract.
     if isinstance(text_updates, dict) and text_updates and all(isinstance(value, dict) for value in text_updates.values()):
-        slide_key = str(analysis.get("slide_id") or "")
         nested = text_updates.get(slide_key)
         if isinstance(nested, dict):
             text_updates = nested
@@ -237,11 +363,26 @@ def _apply_overrides(analysis: dict[str, Any], override_path: Path | None) -> di
         item for item in analysis.get("unresolved", [])
         if not (item.get("kind") == "text" and item.get("id") in reviewed_ids)
     ]
-    analysis["texts"].extend(overrides.get("add_texts", []))
-    analysis["shapes"].extend(overrides.get("add_shapes", []))
-    analysis["lines"].extend(overrides.get("add_lines", []))
-    analysis["icon_candidates"].extend(overrides.get("add_icon_candidates", []))
+    analysis["texts"].extend(scoped("add_texts", []))
+    analysis["shapes"].extend(scoped("add_shapes", []))
+    analysis["lines"].extend(scoped("add_lines", []))
+    analysis["icon_candidates"].extend(scoped("add_icon_candidates", []))
     analysis["override_file"] = str(override_path.resolve())
+    return analysis
+
+
+def _apply_visual_first_text_only(analysis: dict[str, Any]) -> dict[str, Any]:
+    """Keep ImageGen artwork intact and route only reviewed text to native PPT.
+
+    This conservative post-ImageGen mode is for pages where automatic contour
+    and frame promotion creates visible duplicate strokes.  It does not draw a
+    replacement page: the verified ImageGen master remains the visual source,
+    while selected text is removed locally and rebuilt as native text.
+    """
+    analysis["shapes"] = []
+    analysis["lines"] = []
+    analysis["icon_candidates"] = []
+    analysis["visual_first_text_only"] = True
     return analysis
 
 
@@ -650,6 +791,11 @@ def main() -> int:
     parser.add_argument("--max-svg-paths", type=int, default=28)
     parser.add_argument("--no-compose", action="store_true")
     parser.add_argument("--convert-svg-to-shapes", action="store_true")
+    parser.add_argument(
+        "--visual-first-text-only",
+        action="store_true",
+        help="Preserve ImageGen geometry/artwork in the continuous background and rebuild only reviewed text.",
+    )
     parser.add_argument("--force-16x9", action="store_true")
     args = parser.parse_args()
 
@@ -693,6 +839,8 @@ def main() -> int:
     manifest_text.extend(_slide_manifest_exact_text(slide_manifest, selected_slide_id))
     _reconcile_ocr_with_manifest(analysis, list(dict.fromkeys(manifest_text)))
     analysis = _apply_overrides(analysis, Path(args.overrides).resolve() if args.overrides else None)
+    if args.visual_first_text_only:
+        analysis = _apply_visual_first_text_only(analysis)
     width = int(analysis["size"]["width"])
     height = int(analysis["size"]["height"])
     selected_texts, embedded_texts = _select_texts(analysis, height)
