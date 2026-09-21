@@ -231,7 +231,7 @@ def build_spec_lock(*, profile: dict[str, Any], design_spec: dict[str, Any]) -> 
     }
 
 
-def build_imagegen_manifest(*, prompts: dict[str, Any], stage45_dir: Path | None = None, asset_manifest_path: Path | None = None, route: str | None = None) -> dict[str, Any]:
+def build_imagegen_manifest(*, prompts: dict[str, Any], workspace_dir: Path | None = None, asset_manifest_path: Path | None = None, route: str | None = None) -> dict[str, Any]:
     asset_manifest = _safe_json(asset_manifest_path) if asset_manifest_path else {}
     generated_by_slide = {str(item.get("slide_id")): item for item in asset_manifest.get("slides", []) if isinstance(item, dict)}
     records: list[dict[str, Any]] = []
@@ -240,8 +240,8 @@ def build_imagegen_manifest(*, prompts: dict[str, Any], stage45_dir: Path | None
         prompt = str(slide.get("prompt_zh") or slide.get("prompt_en") or "")
         record = generated_by_slide.get(sid, {})
         image_path = None
-        if stage45_dir:
-            candidate = stage45_dir / str(slide.get("final_path") or f"assets/slides/{sid}.png")
+        if workspace_dir:
+            candidate = workspace_dir / str(slide.get("final_path") or f"assets/slides/{sid}.png")
             if candidate.exists():
                 image_path = candidate
         if not image_path and record.get("path"):
@@ -380,7 +380,7 @@ def prepare_presentation_package(
         profile["imagegen_route"] = normalize_presentation_route(imagegen_route, explicit=True)
     package_dir = topic_dir / "final" / "ppt"
     package_dir.mkdir(parents=True, exist_ok=True)
-    slide_brief_path = slide_brief_path or topic_dir / "workspace" / "stage8_handoff" / "slide_brief.json"
+    slide_brief_path = slide_brief_path or topic_dir / "workspace" / "presentation_handoff" / "slide_brief.json"
     slide_brief = _safe_json(slide_brief_path)
     ledgers = [_safe_json(path) for path in evidence_paths if path and path.exists()]
     evidence_ledger = normalize_evidence_ledger(ledgers, source_label="; ".join(str(path) for path in evidence_paths))
@@ -491,7 +491,7 @@ def run_presentation_gates(
     *,
     package: dict[str, Any],
     prompts: dict[str, Any] | None = None,
-    stage45_dir: Path | None = None,
+    workspace_dir: Path | None = None,
     final_deck: Path | None = None,
     mock: bool = False,
 ) -> dict[str, Any]:
@@ -526,9 +526,9 @@ def run_presentation_gates(
                 image_warnings.append(f"{slide.get('slide_id')}:missing_evidence_refs")
             if "Evidence anchors:" not in str(slide.get("prompt_zh", "")):
                 image_issues.append(f"{slide.get('slide_id')}:missing_evidence_anchor_block")
-        if stage45_dir:
-            manifest_path = stage45_dir / "references" / "asset-manifest.json"
-            manifest = build_imagegen_manifest(prompts=prompts, stage45_dir=stage45_dir, asset_manifest_path=manifest_path)
+        if workspace_dir:
+            manifest_path = workspace_dir / "references" / "asset-manifest.json"
+            manifest = build_imagegen_manifest(prompts=prompts, workspace_dir=workspace_dir, asset_manifest_path=manifest_path)
             planned = [item for item in manifest.get("slides", []) if item.get("status") == "planned"]
             reused = [item for item in manifest.get("slides", []) if item.get("status") in {"skipped_existing", "existing"}]
             missing_images = [item.get("slide_id") for item in manifest.get("slides", []) if not item.get("output_sha256")]

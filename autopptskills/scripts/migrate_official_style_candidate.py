@@ -147,7 +147,7 @@ def migrate_prompt(
 
 def prompt_pack(manifest: dict[str, Any]) -> str:
     lines = [
-        "# 张正轩毕业答辩 v2 ImageGen 提示词候选",
+        "# 毕业答辩 v2 ImageGen 提示词候选",
         "",
         "> 候选仅包含规划与提示词，不含可冒用的旧页图或 provenance。每页必须重新执行 ImageGen。",
         "",
@@ -388,7 +388,7 @@ def build_candidate(
     }
     write_json(output_dir / "qa" / "official-contract-static-report.json", static_report)
 
-    readme = f"""# 张正轩毕业答辩官方风格契约 v2 候选
+    readme = f"""# 毕业答辩官方风格契约 v2 候选
 
 该目录是隔离的规划与提示词候选，不覆盖父目录的当前页图、accepted 母版、provenance ledger 或 image-only PPTX。
 

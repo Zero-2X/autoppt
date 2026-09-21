@@ -87,17 +87,17 @@ def _builtin_provenance_record(record: dict[str, Any]) -> bool:
 
 def _manifest_candidates(manifest_path: Path, source: Path) -> list[Path]:
     """Find the prompt pack plus adjacent built-in provenance sidecars."""
-    stage_dir = manifest_path.parent
+    workspace_dir = manifest_path.parent
     if manifest_path.name.lower() in {"asset-manifest.json", "imagegen_manifest.json"}:
-        stage_dir = manifest_path.parent.parent
+        workspace_dir = manifest_path.parent.parent
     stem = source.stem
     candidates = [
         manifest_path,
-        stage_dir / "references" / "asset-manifest.json",
-        stage_dir / "builtin-imagegen-handoff.json",
-        stage_dir / "assets" / "generated" / f"{stem}-pipeline.json",
-        stage_dir / "assets" / "slides" / f"{stem}.imagegen_manifest.json",
-        stage_dir / "assets" / "slides" / f"{stem}.image_generation_metadata.json",
+        workspace_dir / "references" / "asset-manifest.json",
+        workspace_dir / "builtin-imagegen-handoff.json",
+        workspace_dir / "assets" / "generated" / f"{stem}-pipeline.json",
+        workspace_dir / "assets" / "slides" / f"{stem}.imagegen_manifest.json",
+        workspace_dir / "assets" / "slides" / f"{stem}.image_generation_metadata.json",
     ]
     unique: list[Path] = []
     seen: set[str] = set()

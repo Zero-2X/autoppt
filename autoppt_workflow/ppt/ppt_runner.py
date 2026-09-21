@@ -9,16 +9,16 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from stage45_adapter import run_ppt  # noqa: E402
+from ppt_adapter import run_ppt  # noqa: E402
 
 try:
-    from autosearch.presentation.profiles import presentation_profile_choices
+    from autoppt_workflow.presentation.profiles import presentation_profile_choices
 except ImportError:  # pragma: no cover
     presentation_profile_choices = lambda: ("innovation_competition_defense", "thesis_defense", "nsfc_application_defense", "nsfc_conclusion_defense", "academic_paper_report", "research_progress_report")
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run AutoSearch PPT PPT/imagegen adapter.")
+    parser = argparse.ArgumentParser(description="Run the AutoPPT Workflow PPT/ImageGen adapter.")
     parser.add_argument("topic_dir", help="Topic directory, such as sample/topic_xx")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--mock", action="store_true", help="Structural smoke only; always blocked from formal delivery.")

@@ -40,7 +40,7 @@ A later stage may start only when the previous blocking gate passes. Mock images
 non-Office previews, and structural audits are useful diagnostics but cannot
 replace the corresponding real gate.
 
-## Stage 0: preflight
+## Phase 0: preflight
 
 - Inspect source files and current workspace state before generating.
 - Check Codex built-in ImageGen readiness before a long batch. API-key,
@@ -52,7 +52,7 @@ replace the corresponding real gate.
   `TEMP`/`TMP` directory on a drive with adequate space.
 - Preserve prior accepted rounds. New work writes a new round.
 
-## Stages 1-3: content and visual master
+## Phases 1–3: content and visual master
 
 - Every visible factual claim has source references or is explicitly framing.
 - Every number, date, identifier, score, coordinate, interface field, and table
@@ -74,7 +74,7 @@ replace the corresponding real gate.
   anchor and reading path.
 - Regenerate only failed pages unless the style contract itself failed.
 
-## Stage 4: ImageGen-first gate
+## ImageGen gate: ImageGen-first gate
 
 The image-only deck proves the visual master before editability work. It must
 come from the built-in ImageGen capability:
@@ -90,7 +90,7 @@ come from the built-in ImageGen capability:
 
 Editable reconstruction cannot retroactively repair a failed provenance gate.
 
-## Stages 5-6: semantic reconstruction
+## Phases 5–6: semantic reconstruction
 
 Route every object before composition:
 
@@ -149,7 +149,7 @@ it in the clean background or extracting it into a separately movable
 transparent PNG. Record the SVG candidate, rejection reason, fallback asset,
 source bbox, and final bbox.
 
-## Stages 7-8: release QA
+## Phases 7–8: release QA
 
 Technical gates create evidence; they do not perform the final visual judgment.
 
@@ -183,7 +183,7 @@ Then inspect every slide at full size and the full-deck montage. Review:
 Mean absolute pixel difference is useful for comparing two rounds of the same
 slide. It is not a universal pass threshold.
 
-## Stage 9: immutable release and learning
+## release: immutable release and learning
 
 - Aggregate all reports with `scripts/release_gate.py`.
 - A missing or pending all-slide review returns `blocked`.

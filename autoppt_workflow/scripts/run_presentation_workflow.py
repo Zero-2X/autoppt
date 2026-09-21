@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Run or resume the profile-aware PPT presentation workflow.
 
-This is a thin CLI over the existing Stage4.5 adapter. It intentionally keeps
-the old adapter as the owner of ImageGen and PPTX assembly.
+This CLI coordinates content planning, verified ImageGen handoffs, PPTX
+assembly, and presentation quality checks through the presentation adapter.
 """
 from __future__ import annotations
 
@@ -15,9 +15,9 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from autosearch.presentation.orchestrator import build_defense_materials, prepare_presentation_package, run_presentation_gates
-from autosearch.presentation.profiles import get_presentation_profile, presentation_profile_choices
-from autosearch.ppt.stage45_adapter import regenerate_ppt_slide, run_ppt
+from autoppt_workflow.presentation.orchestrator import build_defense_materials, prepare_presentation_package, run_presentation_gates
+from autoppt_workflow.presentation.profiles import get_presentation_profile, presentation_profile_choices
+from autoppt_workflow.ppt.ppt_adapter import regenerate_ppt_slide, run_ppt
 
 
 def _quality_pptx(topic_dir: Path, explicit: str = "", result: dict | None = None) -> Path | None:
@@ -42,7 +42,7 @@ def _run_quality_iteration(topic_dir: Path, args: argparse.Namespace, *, result:
         return {"status": "blocked", "error": "quality iteration PPTX could not be resolved"}
     command = [
         sys.executable,
-        str(ROOT / "autosearch" / "scripts" / "iterate_presentation_quality.py"),
+        str(ROOT / "autoppt_workflow" / "scripts" / "iterate_presentation_quality.py"),
         "--pptx",
         str(pptx),
         "--max-iterations",
@@ -103,7 +103,7 @@ def build_parser() -> argparse.ArgumentParser:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--mock", action="store_true", help="Structural smoke only; always blocked from formal delivery.")
     mode.add_argument("--real", action="store_true", help="Consume verified Codex built-in image_gen outputs only.")
-    parser.add_argument("--force", action="store_true", help="Rebuild the Stage4.5 workspace.")
+    parser.add_argument("--force", action="store_true", help="Rebuild the ImageGen assembly workspace.")
     parser.add_argument("--slide-id", default="", help="Regenerate only this slide asset and preserve the accepted deck.")
     parser.add_argument("--speaker-only", action="store_true", help="Generate speaker notes/questions from the current Slide IR without regenerating images.")
     parser.add_argument("--audit-only", action="store_true", help="Run the seven presentation gates against existing artifacts without generating images.")
@@ -128,7 +128,7 @@ def main() -> int:
             topic_dir,
             profile_name=args.presentation_profile,
             evidence_paths=[
-                topic_dir / "workspace" / "stage2_idea_generation" / "evidence-ledger.json",
+                topic_dir / "workspace" / "evidence_workspace" / "evidence-ledger.json",
                 topic_dir / "workspace" / "research" / "evidence-ledger.json",
             ],
         )
@@ -140,7 +140,7 @@ def main() -> int:
             topic_dir,
             profile_name=args.presentation_profile,
             evidence_paths=[
-                topic_dir / "workspace" / "stage2_idea_generation" / "evidence-ledger.json",
+                topic_dir / "workspace" / "evidence_workspace" / "evidence-ledger.json",
                 topic_dir / "workspace" / "research" / "evidence-ledger.json",
             ],
             imagegen_route=args.imagegen_route or None,
@@ -153,7 +153,7 @@ def main() -> int:
             topic_dir,
             package=package,
             prompts=prompts,
-            stage45_dir=topic_dir / "final" / "ppt" / "stage45_workspace",
+            workspace_dir=topic_dir / "final" / "ppt" / "imagegen_workspace",
             final_deck=topic_dir / "final" / "ppt" / "final_deck.pptx",
             mock=bool(audit.get("mock_mode", False)),
         )

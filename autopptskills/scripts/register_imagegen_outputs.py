@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Validate and register pages produced by Codex built-in ``image_gen``.
 
-Despite the historical filename, this script is not a generator. The host
-agent must call the built-in tool and hand its PNG plus ``ig_`` provenance to
-the stage directory first. This process only validates and writes assembly
+The host agent calls the built-in tool and hands its PNG plus accepted provenance to
+the ImageGen workspace first. This process only validates and writes assembly
 metadata. API keys, provider endpoints, CLIs, local commands, and mocks are
 never accepted as formal output.
 """
@@ -38,7 +37,7 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def resolve_stage(value: str) -> tuple[Path, Path]:
+def resolve_workspace(value: str) -> tuple[Path, Path]:
     path = Path(value).expanduser().resolve()
     if path.is_file():
         return path.parent, path
@@ -62,8 +61,8 @@ def require_builtin_policy(prompt_data: dict[str, Any]) -> None:
         raise BuiltinImageGenBlocked(failures)
 
 
-def update_deck_spec(stage: Path, prompts: dict[str, Any]) -> Path:
-    path = stage / "deck-spec.json"
+def update_deck_spec(workspace: Path, prompts: dict[str, Any]) -> Path:
+    path = workspace / "deck-spec.json"
     slides = []
     for slide in prompts.get("slides", []):
         sid = str(slide.get("slide_id") or "")
@@ -98,7 +97,7 @@ def update_deck_spec(stage: Path, prompts: dict[str, Any]) -> Path:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("image_prompts", help="Path to image-prompts.json or its Stage45 directory.")
+    parser.add_argument("image_prompts", help="Path to image-prompts.json or its ImageGen directory.")
     parser.add_argument("--skip-existing", action="store_true", help=argparse.SUPPRESS)
     # Historical generation options are accepted only to produce an explicit
     # refusal, never to route a request to an external backend.
@@ -127,22 +126,22 @@ def main(argv: list[str] | None = None) -> int:
             + ", ".join(sorted(forbidden_args))
         )
 
-    stage, prompt_path = resolve_stage(args.image_prompts)
+    workspace, prompt_path = resolve_workspace(args.image_prompts)
     if not prompt_path.exists():
         raise SystemExit(f"Missing image prompt pack: {prompt_path}")
     prompts = load_json(prompt_path)
     require_builtin_policy(prompts)
-    issues, _records = validate_builtin_imagegen_outputs(stage, prompts)
+    issues, _records = validate_builtin_imagegen_outputs(workspace, prompts)
     if issues:
-        report = write_builtin_blocker_report(stage, issues, image_prompts=prompts)
+        report = write_builtin_blocker_report(workspace, issues, image_prompts=prompts)
         raise SystemExit(
             "Built-in image_gen handoff is blocked; no alternate backend is permitted. "
             f"Issues: {', '.join(issues)}; blocker_report={report}"
         )
-    manifest = build_builtin_asset_manifest(stage, prompts)
-    manifest_path = stage / "references" / "asset-manifest.json"
+    manifest = build_builtin_asset_manifest(workspace, prompts)
+    manifest_path = workspace / "references" / "asset-manifest.json"
     write_json(manifest_path, manifest)
-    deck_spec = update_deck_spec(stage, prompts)
+    deck_spec = update_deck_spec(workspace, prompts)
     print(json.dumps({"status": "ready_for_assembly", "backend": "builtin_image_gen", "asset_manifest": str(manifest_path), "deck_spec": str(deck_spec)}, ensure_ascii=False, indent=2))
     return 0
 

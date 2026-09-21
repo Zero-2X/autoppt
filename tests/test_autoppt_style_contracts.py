@@ -18,7 +18,7 @@ from autopptskills.scripts.style_contracts import (
 
 class StyleContractsTest(unittest.TestCase):
     def test_prompt_routes_preserve_all_reviewed_support(self) -> None:
-        from autosearch.ppt.image_prompt_builder import build_image_prompts as production_build
+        from autoppt_workflow.ppt.image_prompt_builder import build_image_prompts as production_build
 
         support = [f"已审核证据{i}：方法条件与结果解释" for i in range(1, 7)]
         brief = {"slides": [{

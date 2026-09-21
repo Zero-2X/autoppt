@@ -1,6 +1,6 @@
 ---
 name: autopptskills
-description: Create, reconstruct, audit, and release source-grounded PowerPoint decks through an ImageGen-first workflow. Use for academic, project, research, competition, or thesis presentations, image-only decks, and image-to-editable PPTX work that requires semantic layers and real PowerPoint QA. Do not use it to replace built-in ImageGen with script-drawn first-stage slides or to describe raster assets as native or path-editable.
+description: Create, reconstruct, audit, and release source-grounded PowerPoint decks through an ImageGen-first workflow. Use for academic, project, research, competition, or thesis presentations, image-only decks, and image-to-editable PPTX work that requires semantic layers and real PowerPoint QA. Do not use it to replace built-in ImageGen with script-drawn visual masters or to describe raster assets as native or path-editable.
 ---
 
 # AutoPPTSkills
@@ -54,7 +54,7 @@ promoted to an image-only, editable, or Gold deliverable.
 The boundary is explicit: code may place an already verified ImageGen page in
 an image-only PPTX, or reconstruct reviewed text/simple geometry after the
 ImageGen-first gate. Code may not draw, template, screenshot, or synthesize the
-first-stage page, and a missing ImageGen page must stop the run.
+visual master, and a missing ImageGen page must stop the run.
 
 ## Decision precedence
 
@@ -83,7 +83,7 @@ Never reduce fidelity merely to increase the nominal vector count.
 -> 8. release an immutable accepted round and capture reusable lessons
 ```
 
-A later blocking stage may not repair or excuse a failed earlier gate.
+A later workflow phase may not repair or excuse a failed earlier gate.
 
 ## Route the request
 
@@ -99,7 +99,7 @@ A later blocking stage may not repair or excuse a failed earlier gate.
 A non-ImageGen screenshot may be analyzed as a reference, but a new Gold
 deliverable must first recreate it as a verified built-in ImageGen master.
 
-## Stage contracts
+## Workflow contracts
 
 ### 0. Preflight and run identity
 
@@ -139,16 +139,16 @@ deliverable must first recreate it as a verified built-in ImageGen master.
 
 ### 3. Built-in ImageGen visual masters
 
-Every first-stage final slide image must come from Codex built-in `image_gen`.
+Every visual-generation final slide image must come from Codex built-in `image_gen`.
 Do not read or use `OPENAI_API_KEY`, a provider endpoint or SDK, a proxy,
-`STAGE45_IMAGEGEN_CLI`, `LOCAL_IMAGEGEN_COMMAND`, ComfyUI, Stable Diffusion, or
+`IMAGEGEN_CLI`, `LOCAL_IMAGEGEN_COMMAND`, ComfyUI, Stable Diffusion, or
 another backend on this route.
 
 For every pending slide:
 
 1. Make one built-in `image_gen` call with that slide's complete prompt.
 2. Ingest the returned built-in result (`ig_...` or a validated host record) through
-   `autosearch/ppt/builtin_imagegen_handoff.py` or the equivalent repository
+   `autoppt_workflow/ppt/builtin_imagegen_handoff.py` or the equivalent repository
    handoff.
 3. Record prompt, slide ID, output path, current file hash, backend identity,
    and provenance.
@@ -156,7 +156,7 @@ For every pending slide:
    style contract is wrong.
 
 Scripts may prepare prompts, materialize tool results, assemble images,
-reconstruct objects, and run QA. They must not draw substitute first-stage
+reconstruct objects, and run QA. They must not draw substitute visual-master
 slides with PIL, SVG, HTML, Canvas, matplotlib, or PowerPoint shapes.
 
 If built-in ImageGen is blocked, preserve the prompt/spec/manifest package and

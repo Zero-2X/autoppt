@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 try:
     from .image_prompt_builder import build_image_prompts, write_json, write_prompt_pack
     from .imagegen_queue_builder import build_generation_queue
-    from .pptx_builder import build_deck_spec, build_pptx_with_stage45_builder
+    from .pptx_builder import build_deck_spec, build_pptx
     from .slide_auditor import audit_ppt, write_json as write_audit_json
     from ..builtin_imagegen_policy import (
         BuiltinImageGenBlocked,
@@ -22,11 +22,11 @@ try:
     _repo_root = Path(__file__).resolve().parents[3]
     if str(_repo_root) not in sys.path:
         sys.path.insert(0, str(_repo_root))
-    from autosearch.ppt.builtin_imagegen_handoff import prepare_handoff
+    from autoppt_workflow.ppt.builtin_imagegen_handoff import prepare_handoff
 except ImportError:  # pragma: no cover - supports direct script execution.
     from image_prompt_builder import build_image_prompts, write_json, write_prompt_pack
     from imagegen_queue_builder import build_generation_queue
-    from pptx_builder import build_deck_spec, build_pptx_with_stage45_builder
+    from pptx_builder import build_deck_spec, build_pptx
     from slide_auditor import audit_ppt, write_json as write_audit_json
     _repo_root = Path(__file__).resolve().parents[3]
     if str(_repo_root) not in sys.path:
@@ -38,7 +38,7 @@ except ImportError:  # pragma: no cover - supports direct script execution.
         write_builtin_blocker_report,
     )
     try:
-        from autosearch.ppt.builtin_imagegen_handoff import prepare_handoff
+        from autoppt_workflow.ppt.builtin_imagegen_handoff import prepare_handoff
     except ImportError:
         prepare_handoff = None
 
@@ -56,11 +56,11 @@ def write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def preflight_real_imagegen(stage45_dir: Path) -> list[str]:
+def preflight_real_imagegen(workspace_dir: Path) -> list[str]:
     """Validate only PNGs and provenance from the built-in Codex image_gen tool."""
-    prompt_path = Path(stage45_dir) / "image-prompts.json"
+    prompt_path = Path(workspace_dir) / "image-prompts.json"
     prompts = read_json(prompt_path) if prompt_path.exists() else None
-    issues, _records = validate_builtin_imagegen_outputs(Path(stage45_dir), prompts)
+    issues, _records = validate_builtin_imagegen_outputs(Path(workspace_dir), prompts)
     policy = (prompts or {}).get("prompt_policy", {}) if isinstance(prompts, dict) else {}
     if policy.get("backend") != "builtin_image_gen":
         issues.append("builtin_imagegen_backend_policy_missing")
@@ -86,17 +86,17 @@ def update_workspace_state(topic_dir: Path, status: str, *, final_deck: Path, pp
     if not state_path.exists():
         return
     state = read_json(state_path)
-    state["current_stage"] = "ppt"
-    state["current_stage_status"] = status
-    state.setdefault("stage_status", {})["ppt"] = status
-    state["active_focus"] = "PPT PPT/imagegen handoff complete" if status == "completed" else "PPT PPT/imagegen blocked"
-    state["current_direction"] = "competition deck generated through Stage4.5 adapter"
+    state["current_phase"] = "ppt"
+    state["current_phase_status"] = status
+    state.setdefault("phase_status", {})["ppt"] = status
+    state["active_focus"] = "PPT/imagegen handoff complete" if status == "completed" else "PPT/imagegen blocked"
+    state["current_direction"] = "competition deck generated through ImageGen assembly adapter"
     state["next_action"] = "pipeline_complete" if status == "completed" else "fix_ppt"
     state["next_actions"] = [state["next_action"]]
     state["resume_entrypoint"] = "final/ppt/ppt_audit.json"
     state["last_completed_artifact"] = "final/ppt/final_deck.pptx" if status == "completed" else "final/ppt/ppt_audit.json"
     state["required_inputs"] = [] if status == "completed" else ["inspect final/ppt/ppt_audit.json"]
-    state["blocking_reason"] = "" if status == "completed" else "PPT PPT audit failed."
+    state["blocking_reason"] = "" if status == "completed" else "PPT audit failed."
     state["ppt_outputs"] = {
         "final_deck": str(final_deck.relative_to(topic_dir)) if final_deck.exists() else str(final_deck),
         "ppt_audit": str(ppt_audit.relative_to(topic_dir)) if ppt_audit.exists() else str(ppt_audit),
@@ -151,7 +151,7 @@ def write_ppt_failure(
         final_ppt_dir / "ppt_build_report.md",
         "\n".join(
             [
-                "# PPT PPT Build Report",
+                "# PPT Build Report",
                 "",
                 f"- Project: {project_name}",
                 "- Mock Mode: False",
@@ -167,7 +167,7 @@ def write_ppt_failure(
     )
     update_workspace_state(topic_dir, "blocked", final_deck=final_deck, ppt_audit=final_ppt_dir / "ppt_audit.json")
     return {
-        "stage": "ppt",
+        "phase": "ppt",
         "status": "blocked",
         "mock": False,
         "project_name": project_name,
@@ -189,18 +189,18 @@ def find_one(paths: list[Path], description: str) -> Path:
 
 
 def find_final_workbook(topic_dir: Path) -> Path:
-    stage8 = topic_dir / "workspace" / "stage8_handoff"
-    candidates = sorted(stage8.glob("作品书_*_定稿.md"))
+    handoff = topic_dir / "workspace" / "presentation_handoff"
+    candidates = sorted(handoff.glob("作品书_*_定稿.md"))
     if candidates:
         return candidates[0]
     output_candidates = sorted((topic_dir / "output").glob("作品书_*_定稿.md"))
     if output_candidates:
         return output_candidates[0]
-    return find_one([stage8 / "作品书_定稿.md"], "final workbook markdown")
+    return find_one([handoff / "作品书_定稿.md"], "final workbook markdown")
 
 
 def load_project_name(topic_dir: Path) -> str:
-    card_path = topic_dir / "workspace" / "stage4_idea_brief" / "idea-card.json"
+    card_path = topic_dir / "workspace" / "idea_brief" / "idea-card.json"
     if card_path.exists():
         card = read_json(card_path)
         return str(card.get("project_name") or card.get("title") or topic_dir.name)
@@ -282,23 +282,23 @@ def render_mock_slide(path: Path, *, project_name: str, slide: dict[str, Any]) -
     img.save(path, quality=95)
 
 
-def copy_ppt_outputs(stage45_dir: Path, final_ppt_dir: Path, image_prompts: dict[str, Any]) -> None:
+def copy_ppt_outputs(workspace_dir: Path, final_ppt_dir: Path, image_prompts: dict[str, Any]) -> None:
     image_dir = final_ppt_dir / "images"
     image_dir.mkdir(parents=True, exist_ok=True)
     for slide in image_prompts.get("slides", []):
         slide_id = slide.get("slide_id")
-        src = stage45_dir / slide.get("final_path", f"assets/slides/{slide_id}.png")
+        src = workspace_dir / slide.get("final_path", f"assets/slides/{slide_id}.png")
         dst = image_dir / f"{slide_id}.png"
         if src.exists():
             shutil.copy2(src, dst)
 
 
-def run_real_stage45_imagegen(stage45_dir: Path) -> None:
+def run_real_imagegen(workspace_dir: Path) -> None:
     """Assemble from verified built-in ImageGen outputs; never invoke a backend."""
-    stage45_dir = Path(stage45_dir).resolve()
-    prompt_path = stage45_dir / "image-prompts.json"
+    workspace_dir = Path(workspace_dir).resolve()
+    prompt_path = workspace_dir / "image-prompts.json"
     prompts = read_json(prompt_path) if prompt_path.exists() else None
-    issues, _records = validate_builtin_imagegen_outputs(stage45_dir, prompts)
+    issues, _records = validate_builtin_imagegen_outputs(workspace_dir, prompts)
     policy = (prompts or {}).get("prompt_policy", {}) if isinstance(prompts, dict) else {}
     if policy.get("builtin_imagegen_only") is not True:
         issues.insert(0, "builtin_imagegen_only_policy_missing")
@@ -309,51 +309,51 @@ def run_real_stage45_imagegen(stage45_dir: Path) -> None:
     if policy.get("local_command_allowed") is not False:
         issues.append("local_imagegen_route_not_explicitly_forbidden")
     if issues:
-        report = write_builtin_blocker_report(stage45_dir, issues, image_prompts=prompts)
+        report = write_builtin_blocker_report(workspace_dir, issues, image_prompts=prompts)
         raise BuiltinImageGenBlocked(issues, report_path=report)
 
-    build_deck_spec(stage45_dir, prompts or {})
-    manifest = build_builtin_asset_manifest(stage45_dir, prompts)
-    write_json(stage45_dir / "references" / "asset-manifest.json", manifest)
-    output_path = stage45_dir / "pptx" / "output" / "ppt_competition_deck.pptx"
-    report_path = stage45_dir / "pptx" / "output" / "build-report.json"
-    build_pptx_with_stage45_builder(stage45_dir, output_path, report_path)
+    build_deck_spec(workspace_dir, prompts or {})
+    manifest = build_builtin_asset_manifest(workspace_dir, prompts)
+    write_json(workspace_dir / "references" / "asset-manifest.json", manifest)
+    output_path = workspace_dir / "pptx" / "output" / "ppt_competition_deck.pptx"
+    report_path = workspace_dir / "pptx" / "output" / "build-report.json"
+    build_pptx(workspace_dir, output_path, report_path)
 
 
 def run_ppt(topic_dir: Path, *, mock: bool = False, force: bool = False, style_profile: str = "academic_light") -> dict[str, Any]:
     topic_dir = topic_dir.resolve()
     final_dir = topic_dir / "final"
     final_ppt_dir = final_dir / "ppt"
-    stage45_dir = final_ppt_dir / "stage45_workspace"
-    source_dir = stage45_dir / "source-materials"
-    refs_dir = stage45_dir / "references"
-    slides_dir = stage45_dir / "assets" / "slides"
-    output_dir = stage45_dir / "pptx" / "output"
+    workspace_dir = final_ppt_dir / "imagegen_workspace"
+    source_dir = workspace_dir / "source-materials"
+    refs_dir = workspace_dir / "references"
+    slides_dir = workspace_dir / "assets" / "slides"
+    output_dir = workspace_dir / "pptx" / "output"
 
     project_name = load_project_name(topic_dir)
     workbook_path = find_final_workbook(topic_dir)
     slide_brief_path = find_one(
         [
-            topic_dir / "workspace" / "stage8_handoff" / "slide_brief.json",
+            topic_dir / "workspace" / "presentation_handoff" / "slide_brief.json",
             topic_dir / "handoff" / "slide_brief.json",
         ],
         "slide_brief.json",
     )
     ppt_outline_path = find_one(
         [
-            topic_dir / "workspace" / "stage8_handoff" / "ppt_outline.md",
+            topic_dir / "workspace" / "presentation_handoff" / "ppt_outline.md",
             topic_dir / "handoff" / "ppt_outline.md",
         ],
         "ppt_outline.md",
     )
     evidence_path = find_one(
-        [topic_dir / "workspace" / "stage2_idea_generation" / "evidence-ledger.json"],
+        [topic_dir / "workspace" / "evidence_workspace" / "evidence-ledger.json"],
         "evidence-ledger.json",
     )
     research_evidence_path = topic_dir / "workspace" / "research" / "evidence-ledger.json"
 
-    if force and stage45_dir.exists():
-        shutil.rmtree(stage45_dir)
+    if force and workspace_dir.exists():
+        shutil.rmtree(workspace_dir)
     source_dir.mkdir(parents=True, exist_ok=True)
     refs_dir.mkdir(parents=True, exist_ok=True)
     slides_dir.mkdir(parents=True, exist_ok=True)
@@ -372,7 +372,7 @@ def run_ppt(topic_dir: Path, *, mock: bool = False, force: bool = False, style_p
     shutil.copy2(slide_brief_path, final_ppt_dir / "slide_brief.json")
     shutil.copy2(ppt_outline_path, final_ppt_dir / "ppt_outline.md")
 
-    visual_manifest = topic_dir / "workspace" / "stage8_handoff" / "visual-manifest.json"
+    visual_manifest = topic_dir / "workspace" / "presentation_handoff" / "visual-manifest.json"
     if visual_manifest.exists():
         shutil.copy2(visual_manifest, source_dir / "visual-manifest.json")
 
@@ -386,34 +386,34 @@ def run_ppt(topic_dir: Path, *, mock: bool = False, force: bool = False, style_p
         evidence_ledgers=evidence_ledgers,
         style_profile=style_profile,
     )
-    write_json(stage45_dir / "image-prompts.json", image_prompts)
+    write_json(workspace_dir / "image-prompts.json", image_prompts)
     write_json(final_ppt_dir / "imagegen_prompts.json", image_prompts)
     write_prompt_pack(refs_dir / "imagegen-prompt-pack.md", image_prompts)
     if not mock and prepare_handoff is not None:
-        handoff_path = stage45_dir / "builtin-imagegen-handoff.json"
+        handoff_path = workspace_dir / "builtin-imagegen-handoff.json"
         if not handoff_path.exists():
             try:
-                prepare_handoff(stage45_dir / "image-prompts.json", output=handoff_path)
+                prepare_handoff(workspace_dir / "image-prompts.json", output=handoff_path)
             except Exception as exc:  # noqa: BLE001 - preserve a diagnosable blocker.
                 write_text(refs_dir / "builtin-imagegen-handoff-prepare-error.txt", f"{exc.__class__.__name__}: {exc}\n")
 
-    queue = build_generation_queue(stage45_dir, image_prompts, mock=mock)
+    queue = build_generation_queue(workspace_dir, image_prompts, mock=mock)
     if mock:
         for item in queue:
             slide = next(s for s in image_prompts["slides"] if s["slide_id"] == item["slide_id"])
             render_mock_slide(Path(item["final_path"]), project_name=project_name, slide=slide)
             item["status"] = "generated"
-        write_json(stage45_dir / "imagegen-queue.json", {"mock": mock, "items": queue})
-        build_deck_spec(stage45_dir, image_prompts)
-        stage45_pptx = output_dir / "ppt_competition_deck.pptx"
-        stage45_report = output_dir / "build-report.json"
-        build_pptx_with_stage45_builder(stage45_dir, stage45_pptx, stage45_report)
+        write_json(workspace_dir / "imagegen-queue.json", {"mock": mock, "items": queue})
+        build_deck_spec(workspace_dir, image_prompts)
+        imagegen_pptx = output_dir / "ppt_competition_deck.pptx"
+        build_report = output_dir / "build-report.json"
+        build_pptx(workspace_dir, imagegen_pptx, build_report)
     else:
-        write_json(stage45_dir / "imagegen-queue.json", {"mock": mock, "items": queue})
-        build_deck_spec(stage45_dir, image_prompts)
-        preflight_issues = preflight_real_imagegen(stage45_dir)
+        write_json(workspace_dir / "imagegen-queue.json", {"mock": mock, "items": queue})
+        build_deck_spec(workspace_dir, image_prompts)
+        preflight_issues = preflight_real_imagegen(workspace_dir)
         if preflight_issues:
-            blocker_report = write_builtin_blocker_report(stage45_dir, preflight_issues, image_prompts=image_prompts)
+            blocker_report = write_builtin_blocker_report(workspace_dir, preflight_issues, image_prompts=image_prompts)
             return write_ppt_failure(
                 topic_dir=topic_dir,
                 final_ppt_dir=final_ppt_dir,
@@ -424,7 +424,7 @@ def run_ppt(topic_dir: Path, *, mock: bool = False, force: bool = False, style_p
                 existing_final_deck=final_ppt_dir / "final_deck.pptx",
             )
         try:
-            run_real_stage45_imagegen(stage45_dir)
+            run_real_imagegen(workspace_dir)
         except BuiltinImageGenBlocked as exc:
             return write_ppt_failure(
                 topic_dir=topic_dir,
@@ -435,31 +435,31 @@ def run_ppt(topic_dir: Path, *, mock: bool = False, force: bool = False, style_p
                 details=[*exc.issues, f"blocker_report={exc.report_path}"],
                 existing_final_deck=final_ppt_dir / "final_deck.pptx",
             )
-        stage45_pptx = output_dir / "ppt_competition_deck.pptx"
+        imagegen_pptx = output_dir / "ppt_competition_deck.pptx"
     final_deck = final_ppt_dir / "final_deck.pptx"
-    shutil.copy2(stage45_pptx, final_deck)
-    copy_ppt_outputs(stage45_dir, final_ppt_dir, image_prompts)
+    shutil.copy2(imagegen_pptx, final_deck)
+    copy_ppt_outputs(workspace_dir, final_ppt_dir, image_prompts)
 
     audit = audit_ppt(
         image_prompts=image_prompts,
         image_dir=final_ppt_dir / "images",
         pptx_path=final_deck,
         mock=mock,
-        asset_manifest_path=stage45_dir / "references" / "asset-manifest.json",
+        asset_manifest_path=workspace_dir / "references" / "asset-manifest.json",
     )
     write_audit_json(final_ppt_dir / "ppt_audit.json", audit)
     write_text(
         final_ppt_dir / "ppt_build_report.md",
         "\n".join(
             [
-                "# PPT PPT Build Report",
+                "# PPT Build Report",
                 "",
                 f"- Project: {project_name}",
                 f"- Mock Mode: {mock}",
                 f"- Slide Count: {len(image_prompts.get('slides', []))}",
                 f"- Final Deck: `{final_deck}`",
                 f"- Audit Verdict: `{audit['verdict']}`",
-                "- Adapter Source: `research-workflow-pipeline` Stage4.5 policy and PPTX builder",
+                "- Adapter Source: `AutoPPT Workflow` ImageGen assembly policy and PPTX builder",
                 "",
             ]
         ),
@@ -476,7 +476,7 @@ def run_ppt(topic_dir: Path, *, mock: bool = False, force: bool = False, style_p
         )
     update_workspace_state(topic_dir, status, final_deck=final_deck, ppt_audit=final_ppt_dir / "ppt_audit.json")
     return {
-        "stage": "ppt",
+        "phase": "ppt",
         "status": status,
         "mock": mock,
         "project_name": project_name,

@@ -22,7 +22,7 @@ PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 
 class BuiltinImageGenBlocked(RuntimeError):
-    """Raised when a real Stage45 run lacks verified built-in ImageGen output."""
+    """Raised when a real ImageGen run lacks verified built-in ImageGen output."""
 
     def __init__(self, issues: Iterable[str], *, report_path: Path | None = None) -> None:
         self.issues = list(issues)
@@ -85,21 +85,21 @@ def _is_builtin_record(record: dict[str, Any]) -> bool:
     )
 
 
-def _candidate_sidecars(stage45_dir: Path, slide_id: str) -> list[Path]:
+def _candidate_sidecars(workspace_dir: Path, slide_id: str) -> list[Path]:
     return [
-        stage45_dir / "assets" / "generated" / f"{slide_id}-pipeline.json",
-        stage45_dir / "assets" / "slides" / f"{slide_id}.image_generation_metadata.json",
-        stage45_dir / "assets" / "slides" / f"{slide_id}.imagegen_manifest.json",
-        stage45_dir / "references" / f"{slide_id}-builtin-imagegen.json",
-        stage45_dir / "references" / "asset-manifest.json",
-        stage45_dir / "imagegen_manifest.json",
+        workspace_dir / "assets" / "generated" / f"{slide_id}-pipeline.json",
+        workspace_dir / "assets" / "slides" / f"{slide_id}.image_generation_metadata.json",
+        workspace_dir / "assets" / "slides" / f"{slide_id}.imagegen_manifest.json",
+        workspace_dir / "references" / f"{slide_id}-builtin-imagegen.json",
+        workspace_dir / "references" / "asset-manifest.json",
+        workspace_dir / "imagegen_manifest.json",
     ]
 
 
-def _records_for_slide(stage45_dir: Path, slide_id: str) -> list[dict[str, Any]]:
+def _records_for_slide(workspace_dir: Path, slide_id: str) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
-    for path in _candidate_sidecars(stage45_dir, slide_id):
+    for path in _candidate_sidecars(workspace_dir, slide_id):
         if not path.exists():
             continue
         payload = _load_json(path)
@@ -120,13 +120,13 @@ def _records_for_slide(stage45_dir: Path, slide_id: str) -> list[dict[str, Any]]
     return records
 
 
-def _resolve_image(stage45_dir: Path, final_path: str) -> Path:
+def _resolve_image(workspace_dir: Path, final_path: str) -> Path:
     value = Path(final_path)
-    return value.resolve() if value.is_absolute() else (stage45_dir / value).resolve()
+    return value.resolve() if value.is_absolute() else (workspace_dir / value).resolve()
 
 
 def validate_builtin_imagegen_outputs(
-    stage45_dir: Path,
+    workspace_dir: Path,
     image_prompts: dict[str, Any] | None = None,
 ) -> tuple[list[str], list[dict[str, Any]]]:
     """Validate every requested slide against a built-in ImageGen sidecar.
@@ -136,10 +136,10 @@ def validate_builtin_imagegen_outputs(
     irrelevant to this policy.
     """
 
-    stage45_dir = Path(stage45_dir).resolve()
+    workspace_dir = Path(workspace_dir).resolve()
     prompts = image_prompts
     if prompts is None:
-        prompt_path = stage45_dir / "image-prompts.json"
+        prompt_path = workspace_dir / "image-prompts.json"
         prompts = _load_json(prompt_path) if prompt_path.exists() else None
     if not isinstance(prompts, dict):
         return ["builtin_imagegen_prompt_pack_missing"], []
@@ -151,7 +151,7 @@ def validate_builtin_imagegen_outputs(
         return ["builtin_imagegen_prompt_pack_has_no_slides"], []
     for slide in slides:
         slide_id = str(slide.get("slide_id") or "S??")
-        image = _resolve_image(stage45_dir, str(slide.get("final_path") or f"assets/slides/{slide_id}.png"))
+        image = _resolve_image(workspace_dir, str(slide.get("final_path") or f"assets/slides/{slide_id}.png"))
         if not image.exists() or image.stat().st_size == 0:
             issues.append(f"builtin_imagegen_output_missing:{slide_id}")
             continue
@@ -165,7 +165,7 @@ def validate_builtin_imagegen_outputs(
             issues.append(f"builtin_imagegen_output_unreadable:{slide_id}:{exc.__class__.__name__}")
             continue
 
-        records = _records_for_slide(stage45_dir, slide_id)
+        records = _records_for_slide(workspace_dir, slide_id)
         if not records:
             issues.append(f"builtin_imagegen_provenance_missing:{slide_id}")
             continue
@@ -194,7 +194,7 @@ def validate_builtin_imagegen_outputs(
 
 
 def build_builtin_asset_manifest(
-    stage45_dir: Path,
+    workspace_dir: Path,
     image_prompts: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return the canonical asset manifest for verified built-in outputs.
@@ -202,15 +202,15 @@ def build_builtin_asset_manifest(
     This helper is deliberately side-effect free.  Callers may write the
     returned manifest only after ``validate_builtin_imagegen_outputs`` reports
     no issues, which keeps a partial or provider-generated page from being
-    promoted into the formal Stage45 evidence chain.
+    promoted into the formal ImageGen evidence chain.
     """
 
-    stage45_dir = Path(stage45_dir).resolve()
+    workspace_dir = Path(workspace_dir).resolve()
     prompts = image_prompts
     if prompts is None:
-        prompt_path = stage45_dir / "image-prompts.json"
+        prompt_path = workspace_dir / "image-prompts.json"
         prompts = _load_json(prompt_path) if prompt_path.exists() else None
-    issues, records = validate_builtin_imagegen_outputs(stage45_dir, prompts)
+    issues, records = validate_builtin_imagegen_outputs(workspace_dir, prompts)
     if issues:
         raise BuiltinImageGenBlocked(issues)
     by_slide = {str(item.get("slide_id")): item for item in records}
@@ -256,14 +256,14 @@ def build_builtin_asset_manifest(
 
 
 def write_builtin_blocker_report(
-    stage45_dir: Path,
+    workspace_dir: Path,
     issues: Iterable[str],
     *,
     image_prompts: dict[str, Any] | None = None,
     report_path: Path | None = None,
 ) -> Path:
-    stage45_dir = Path(stage45_dir).resolve()
-    path = report_path or (stage45_dir / "references" / "builtin-imagegen-blocker.json")
+    workspace_dir = Path(workspace_dir).resolve()
+    path = report_path or (workspace_dir / "references" / "builtin-imagegen-blocker.json")
     path.parent.mkdir(parents=True, exist_ok=True)
     slides = (image_prompts or {}).get("slides") or []
     payload = {
@@ -287,8 +287,8 @@ def write_builtin_blocker_report(
             }
             for slide in slides
         ],
-        "next_action": "Invoke the built-in image_gen tool for each slide, save each PNG and matching sidecar, then rerun Stage45.",
-        "resume_entrypoint": "autopptskills/scripts/ppt/ppt_stage_runner.py <topic_dir> --real",
+        "next_action": "Invoke the built-in image_gen tool for each slide, save each PNG and matching sidecar, then rerun ImageGen.",
+        "resume_entrypoint": "autopptskills/scripts/ppt/ppt_runner.py <topic_dir> --real",
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return path

@@ -1,7 +1,7 @@
-# img2pptx migration boundary
+# Editable reconstruction scope
 
-This repository carries only the post-ImageGen editable reconstruction layer
-from img2pptx. The migration boundary is:
+The editable reconstruction layer consumes the verified ImageGen output of
+the presentation workflow. Its integration boundary is:
 
 ```text
 Existing presentation workflow (unchanged)

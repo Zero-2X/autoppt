@@ -6,18 +6,21 @@ This project retains only the code needed to generate, reconstruct, audit, and
 release PPT presentations:
 
 - `autopptskills/`
-- `autosearch/presentation/`
-- `autosearch/ppt/`
-- `autosearch/scripts/run_presentation_workflow.py`
-- `autosearch/scripts/iterate_presentation_quality.py`
-- `skills/imagegen-to-editable-ppt/`
+- `autoppt_workflow/presentation/`
+- `autoppt_workflow/ppt/`
+- `autoppt_workflow/scripts/run_presentation_workflow.py`
+- `autoppt_workflow/scripts/iterate_presentation_quality.py`
 - PPT-related tests, documentation, and environment configuration
+
+`autopptskills/` is the single canonical skill source in this repository.
+The copy in the user's Codex skills directory is its runtime installation,
+not a second independently maintained skill.
 
 ## Excluded scope
 
 The following are intentionally excluded:
 
-- `autosearch/research/`, `autosearch/llm/`, research/experiment/paper prompts and templates
+- Research, experiment, and paper prompts and templates
 - `sample/`, `outputs/`, `runs/`, `workspaces/`, `tmp/`, caches, and Office temporary directories
 - Paper writing, submission, review, experiment execution, and research-management code
 - Project-specific one-off scripts and historical deck artifacts

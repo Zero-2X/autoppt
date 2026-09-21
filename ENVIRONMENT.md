@@ -10,8 +10,9 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-You may also create a Conda environment from `environment.yml` or
-`environment.lock.yml`. Node.js/PptxGenJS are used by some editable composers.
+The Conda exports `environment.yml` and `environment.lock.yml` describe a Linux
+environment named `autoppt`; they are not Windows installation recipes.
+Use the venv commands above on Windows. Node.js/PptxGenJS are used by some editable composers.
 Before a formal run, check the available backends:
 
 ```powershell

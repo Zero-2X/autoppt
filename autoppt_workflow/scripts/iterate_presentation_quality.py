@@ -30,7 +30,7 @@ from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[2]
 PPT_SCRIPTS = ROOT / "autopptskills" / "scripts"
-# The standalone onlyppt project keeps durable lessons outside the reusable
+# The standalone AutoPPT project keeps durable lessons outside the reusable
 # skill package so the skill remains portable while every local run can learn.
 DEFAULT_LEDGER = ROOT / "improvement" / "ppt-improvement-ledger.jsonl"
 
@@ -516,7 +516,7 @@ def resolve_defaults(args: argparse.Namespace) -> tuple[Path, Path, Path, Path, 
     pptx = Path(args.pptx).expanduser().resolve()
     project_dir = Path(args.project_dir).expanduser().resolve() if args.project_dir else pptx.parents[3]
     deck_json = Path(args.deck_json).expanduser().resolve() if args.deck_json else pptx.parent.parent / "reconstruction" / "combined" / "deck.json"
-    source_dir = Path(args.source_dir).expanduser().resolve() if args.source_dir else project_dir / "final" / "ppt" / "stage45_workspace"
+    source_dir = Path(args.source_dir).expanduser().resolve() if args.source_dir else project_dir / "final" / "ppt" / "imagegen_workspace"
     iteration_dir = Path(args.iteration_dir).expanduser().resolve() if args.iteration_dir else project_dir / "final" / "ppt" / "reconstruction" / "quality_iterations"
     manifest = Path(args.manifest).expanduser().resolve() if args.manifest else source_dir / "image-prompts.json"
     return pptx, project_dir, deck_json, source_dir, iteration_dir, manifest

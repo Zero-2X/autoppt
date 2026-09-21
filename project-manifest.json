@@ -1,24 +1,20 @@
 {
-  "schema_version": "autoppt-migration-v1",
+  "schema_version": "autoppt-project-v1",
   "created_at": "2026-09-15T23:30:00+08:00",
-  "source_repository": "autoresearch2ppt (historical source; local path not required)",
-  "source_branch": "onlyppt",
+  "updated_on": "2026-09-21",
+  "project": "AutoPPT",
   "destination": ".",
-  "mode": "copy-out; source repository preserved",
+  "mode": "standalone repository",
   "included": [
     "autopptskills/",
-    "autosearch/presentation/",
-    "autosearch/ppt/",
-    "autosearch/scripts/run_presentation_workflow.py",
-    "autosearch/scripts/iterate_presentation_quality.py",
-    "skills/imagegen-to-editable-ppt/",
+    "autoppt_workflow/presentation/",
+    "autoppt_workflow/ppt/",
+    "autoppt_workflow/scripts/run_presentation_workflow.py",
+    "autoppt_workflow/scripts/iterate_presentation_quality.py",
     "PPT-related tests and docs",
     "improvement/ continuous-improvement knowledge base"
   ],
   "excluded": [
-    "autosearch/research/",
-    "autosearch/llm/",
-    "autosearch/gates/",
     "paper/manuscript/experiment/submission workflows",
     "historical outputs, runs, workspaces, samples and caches",
     "one-off project-specific scripts"
@@ -27,6 +23,6 @@
     "ledger": "improvement/ppt-improvement-ledger.jsonl",
     "handbook": "improvement/style-handbook.md",
     "recorder": "scripts/update_ppt_knowledge.py",
-    "prompt_injection": "autosearch/ppt/image_prompt_builder.py"
+    "prompt_injection": "autoppt_workflow/ppt/image_prompt_builder.py"
   }
 }

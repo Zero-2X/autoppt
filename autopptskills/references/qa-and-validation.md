@@ -41,7 +41,7 @@ guardrails.
 
 The generation backend is part of the gate, not an implementation detail. A
 valid run must identify Codex built-in `image_gen` as the backend. Any
-`OPENAI_API_KEY`, provider endpoint, proxy, `STAGE45_IMAGEGEN_CLI`,
+`OPENAI_API_KEY`, provider endpoint, proxy, `IMAGEGEN_CLI`,
 `LOCAL_IMAGEGEN_COMMAND`, or alternate-provider marker is a hard failure.
 When the built-in call is blocked, preserve the prompt/spec/manifest package
 and report `blocked`; do not make a mock or locally drawn page look like a
@@ -85,12 +85,12 @@ Verify:
 Useful command:
 
 ```powershell
-python autopptskills\scripts\build_competition_ppt.py <deck-spec.json> --output <out.pptx> --report <build-report.json>
+python autopptskills\scripts\build_image_deck.py <deck-spec.json> --output <out.pptx> --report <build-report.json>
 ```
 
 If this command fails, its error is usually authoritative for assembly readiness.
 
-Passing `build_competition_ppt.py` only proves assembly. Passing `verify_imagegen_first_gate.py` proves that the assembled current hashes have accepted ImageGen provenance and that scripts did not add slide content objects. Do not start editable reconstruction if the gate fails.
+Passing `build_image_deck.py` only proves assembly. Passing `verify_imagegen_first_gate.py` proves that the assembled current hashes have accepted ImageGen provenance and that scripts did not add slide content objects. Do not start editable reconstruction if the gate fails.
 
 When an existing planning manifest predates the protected official-source
 contract, create an isolated candidate instead of editing its accepted images

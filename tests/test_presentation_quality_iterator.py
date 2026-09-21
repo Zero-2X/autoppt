@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "autosearch" / "scripts" / "iterate_presentation_quality.py"
+SCRIPT = ROOT / "autoppt_workflow" / "scripts" / "iterate_presentation_quality.py"
 
 
 def load_module():

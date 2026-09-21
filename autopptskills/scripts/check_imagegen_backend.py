@@ -34,7 +34,7 @@ def write_json(path: Path, payload: dict) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage", help="Stage45 workspace containing image-prompts.json.")
+    parser.add_argument("--workspace", help="ImageGen workspace containing image-prompts.json.")
     parser.add_argument("--handoff", help="builtin-imagegen-handoff.json to verify.")
     parser.add_argument("--report", help="Machine-readable JSON report path.")
     # Retain old flags only to fail loudly instead of silently taking the old
@@ -65,10 +65,10 @@ def main(argv: list[str] | None = None) -> int:
             args.timeout,
         )
     )
-    stage = Path(args.stage).expanduser().resolve() if args.stage else None
+    workspace = Path(args.workspace).expanduser().resolve() if args.workspace else None
     handoff = Path(args.handoff).expanduser().resolve() if args.handoff else None
-    if handoff and not stage:
-        stage = handoff.parent
+    if handoff and not workspace:
+        workspace = handoff.parent
 
     issues: list[str] = []
     report_payload: dict[str, object] = {
@@ -85,16 +85,16 @@ def main(argv: list[str] | None = None) -> int:
     }
     if legacy_flags:
         issues.append("legacy_api_or_cli_arguments_are_forbidden")
-    if stage is None:
-        issues.append("builtin_imagegen_stage_missing")
-    elif not stage.exists():
-        issues.append(f"builtin_imagegen_stage_missing:{stage}")
+    if workspace is None:
+        issues.append("builtin_imagegen_workspace_missing")
+    elif not workspace.exists():
+        issues.append(f"builtin_imagegen_workspace_missing:{workspace}")
     else:
-        prompt_path = stage / "image-prompts.json"
+        prompt_path = workspace / "image-prompts.json"
         prompts = load_json(prompt_path) if prompt_path.exists() else None
-        validation_issues, records = validate_builtin_imagegen_outputs(stage, prompts)
+        validation_issues, records = validate_builtin_imagegen_outputs(workspace, prompts)
         issues.extend(validation_issues)
-        report_payload["stage"] = str(stage)
+        report_payload["workspace"] = str(workspace)
         report_payload["slides_verified"] = len(records)
         if handoff:
             report_payload["handoff"] = str(handoff)
@@ -114,9 +114,9 @@ def main(argv: list[str] | None = None) -> int:
         report_payload["next_action"] = "Assemble the verified built-in ImageGen pages; no generation is performed by this command."
     else:
         report_payload["next_action"] = "Retry or repair the Codex built-in image_gen handoff; do not use API, CLI, proxy, local command, or mock."
-        if stage and stage.exists():
+        if workspace and workspace.exists():
             try:
-                blocker = write_builtin_blocker_report(stage, issues, image_prompts=load_json(stage / "image-prompts.json"))
+                blocker = write_builtin_blocker_report(workspace, issues, image_prompts=load_json(workspace / "image-prompts.json"))
                 report_payload["blocker_report"] = str(blocker)
             except (OSError, json.JSONDecodeError):
                 pass

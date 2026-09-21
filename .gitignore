@@ -1,4 +1,8 @@
 __pycache__/
+.venv/
+.env
+.env.*
+!.env.example
 *.py[cod]
 .pytest_cache/
 .codex-tmp/
@@ -10,7 +14,7 @@ tmp/
 runs/
 outputs/
 workspaces/
-**/final/ppt/stage45_workspace/
+**/final/ppt/imagegen_workspace/
 **/final/ppt/quality_iterations/
 *.pptx
 *.pdf

@@ -139,7 +139,7 @@ The PPTX assembly step only places each image full bleed on a blank 16:9 slide.
 ## Assembly
 
 ```powershell
-python autopptskills\scripts\build_competition_ppt.py <deck-spec.json> --output <out.pptx> --report <build-report.json>
+python autopptskills\scripts\build_image_deck.py <deck-spec.json> --output <out.pptx> --report <build-report.json>
 ```
 
 If the builder reports missing images, generate or copy the missing `assets/slides/Sxx.png` files first. Do not create diagnostic placeholder pages as a substitute for final slides.

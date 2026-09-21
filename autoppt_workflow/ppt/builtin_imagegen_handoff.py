@@ -209,16 +209,16 @@ def _usable_records(records: list[dict[str, Any]]) -> list[tuple[int, dict[str, 
     return usable
 
 
-def _stage_from_handoff(path: Path, handoff: dict[str, Any]) -> Path:
-    value = handoff.get("stage_dir")
+def _workspace_from_handoff(path: Path, handoff: dict[str, Any]) -> Path:
+    value = handoff.get("workspace_dir")
     if value:
-        stage = Path(str(value)).expanduser()
-        return stage.resolve() if stage.is_absolute() else (path.parent / stage).resolve()
+        workspace = Path(str(value)).expanduser()
+        return workspace.resolve() if workspace.is_absolute() else (path.parent / workspace).resolve()
     return path.parent.resolve()
 
 
 def _blocked_report_path(handoff_path: Path) -> Path:
-    return _stage_from_handoff(handoff_path, {}) / "references" / "builtin-imagegen-handoff-blocker.json"
+    return _workspace_from_handoff(handoff_path, {}) / "references" / "builtin-imagegen-handoff-blocker.json"
 
 
 def write_blocked_report(
@@ -228,8 +228,8 @@ def write_blocked_report(
     handoff: dict[str, Any] | None = None,
 ) -> Path:
     handoff = handoff or {}
-    stage = _stage_from_handoff(handoff_path, handoff)
-    path = stage / "references" / "builtin-imagegen-handoff-blocker.json"
+    workspace = _workspace_from_handoff(handoff_path, handoff)
+    path = workspace / "references" / "builtin-imagegen-handoff-blocker.json"
     slides = handoff.get("slides") if isinstance(handoff.get("slides"), list) else []
     payload = {
         "schema_version": "builtin-imagegen-handoff-blocker-v1",
@@ -271,7 +271,7 @@ def prepare_handoff(
             "schema_version": SCHEMA_VERSION,
             "status": "blocked",
             "created_at": _utc_now(),
-            "stage_dir": str(prompt_manifest.parent.resolve()),
+            "workspace_dir": str(prompt_manifest.parent.resolve()),
             "prompt_manifest": str(prompt_manifest),
             "policy": dict(BUILTIN_ONLY_POLICY),
             "slides": [],
@@ -312,7 +312,7 @@ def prepare_handoff(
             "schema_version": SCHEMA_VERSION,
             "status": "blocked",
             "created_at": _utc_now(),
-            "stage_dir": str(prompt_manifest.parent.resolve()),
+            "workspace_dir": str(prompt_manifest.parent.resolve()),
             "prompt_manifest": str(prompt_manifest),
             "policy": dict(BUILTIN_ONLY_POLICY),
             "slides": queue,
@@ -341,7 +341,7 @@ def prepare_handoff(
         "schema_version": SCHEMA_VERSION,
         "status": "ready_for_builtin_calls",
         "created_at": _utc_now(),
-        "stage_dir": str(prompt_manifest.parent.resolve()),
+        "workspace_dir": str(prompt_manifest.parent.resolve()),
         "prompt_manifest": str(prompt_manifest),
         "thread_id": resolved_thread,
         "session_jsonl": str(resolved_session) if resolved_session else "",
@@ -429,14 +429,14 @@ def ingest_slide(
         report = write_blocked_report(handoff_path, [f"builtin_imagegen_result_not_png:{slide_id}"], handoff=handoff)
         raise BuiltinImageGenHandoffBlocked([f"builtin_imagegen_result_not_png:{slide_id}"], report_path=report)
 
-    stage = _stage_from_handoff(handoff_path, handoff)
+    workspace = _workspace_from_handoff(handoff_path, handoff)
     output_path = Path(str(target.get("final_path") or f"assets/slides/{slide_id}.png"))
-    output_path = output_path.resolve() if output_path.is_absolute() else (stage / output_path).resolve()
+    output_path = output_path.resolve() if output_path.is_absolute() else (workspace / output_path).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(image_bytes)
     digest = _sha256_file(output_path)
     generated_at = _utc_now()
-    sidecar_path = stage / "assets" / "generated" / f"{slide_id}-pipeline.json"
+    sidecar_path = workspace / "assets" / "generated" / f"{slide_id}-pipeline.json"
     sidecar = {
         "schema_version": PROVENANCE_SCHEMA_VERSION,
         "slide_id": str(slide_id),
@@ -452,7 +452,7 @@ def ingest_slide(
         "timestamp": record.get("timestamp"),
         "revised_prompt": str(record.get("revised_prompt") or "")[:4000],
         "prompt_sha256": target.get("prompt_sha256", ""),
-        "final_path": str(output_path.relative_to(stage)) if output_path.is_relative_to(stage) else str(output_path),
+        "final_path": str(output_path.relative_to(workspace)) if output_path.is_relative_to(workspace) else str(output_path),
         "output_path": str(output_path),
         "sha256": digest,
         "bytes": len(image_bytes),
@@ -468,7 +468,7 @@ def ingest_slide(
             "sha256": digest,
             "bytes": len(image_bytes),
             "generated_at": generated_at,
-            "provenance_sidecar": str(sidecar_path.relative_to(stage)) if sidecar_path.is_relative_to(stage) else str(sidecar_path),
+            "provenance_sidecar": str(sidecar_path.relative_to(workspace)) if sidecar_path.is_relative_to(workspace) else str(sidecar_path),
         }
     )
     handoff["session_jsonl"] = str(resolved_session.resolve())
@@ -491,8 +491,8 @@ def verify_handoff(handoff_path: Path, *, report_path: Path | None = None) -> di
         issues.append("invalid_builtin_imagegen_handoff_manifest")
     if handoff.get("policy") != BUILTIN_ONLY_POLICY:
         issues.append("builtin_only_policy_mismatch")
-    stage = _stage_from_handoff(handoff_path, handoff)
-    prompt_path = Path(str(handoff.get("prompt_manifest") or stage / "image-prompts.json"))
+    workspace = _workspace_from_handoff(handoff_path, handoff)
+    prompt_path = Path(str(handoff.get("prompt_manifest") or workspace / "image-prompts.json"))
     if not prompt_path.is_absolute():
         prompt_path = (handoff_path.parent / prompt_path).resolve()
     prompts = _load_json(prompt_path) if prompt_path.exists() else None
@@ -500,7 +500,7 @@ def verify_handoff(handoff_path: Path, *, report_path: Path | None = None) -> di
         issues.append("builtin_imagegen_prompt_pack_missing")
     else:
         issues.extend(_validate_prompt_policy(prompts))
-    validation_issues, accepted = validate_builtin_imagegen_outputs(stage, prompts if isinstance(prompts, dict) else None)
+    validation_issues, accepted = validate_builtin_imagegen_outputs(workspace, prompts if isinstance(prompts, dict) else None)
     issues.extend(validation_issues)
     slides = handoff.get("slides") if isinstance(handoff.get("slides"), list) else []
     for item in slides:
@@ -522,7 +522,7 @@ def verify_handoff(handoff_path: Path, *, report_path: Path | None = None) -> di
         "issues": issues,
         "next_action": "Proceed to image-only PPTX assembly." if not issues else "Retry built-in image_gen for pending slides; no alternate backend is permitted.",
     }
-    path = report_path or (stage / "references" / "builtin-imagegen-handoff-report.json")
+    path = report_path or (workspace / "references" / "builtin-imagegen-handoff-report.json")
     _write_json(path, payload)
     if issues:
         write_blocked_report(handoff_path, issues, handoff=handoff)

@@ -18,6 +18,30 @@ Use this when the input is one or more slide screenshots/images and the output m
 
 ## Editability Contract
 
+### Reviewed inputs and semantic identity
+
+Start from verified full-slide ImageGen PNGs with current hashes and accepted
+built-in provenance, reviewed Slide Manifest text/numbers, known slide
+dimensions, stable slide IDs, and an explicit editable-draft or Gold tier.
+OCR proposes geometry and reading order; reviewed manifest wording, numbers,
+formulas, and identifiers remain authoritative.
+
+Every component in `component_manifest.json` records at least:
+
+```text
+id, semantic_type, parent_id, bbox, z_index, content_id,
+render_type, style, editable, confidence, provenance
+```
+
+Semantic text must resolve `content_id` to the reviewed Slide Manifest.
+Missing linkage is draft/warn evidence and blocks Gold delivery. Validate the
+manifest with `scripts/component_manifest_qa.py` and preserve its QA report.
+Use a native frame for simple panel geometry around bounded raster artwork.
+Every rejected vector retains its reason, source/final bbox, and fallback asset.
+
+These contracts are maintained here as part of the single `autopptskills`
+skill, alongside the main skill's preflight, object routing, and release gates.
+
 The default reconstruction background policy is one continuous full-slide clean background. The legacy `pixel-anchored-background-tile` route is compatibility-only and must be explicitly requested; it is not acceptable for a normal final editable deliverable.
 
 Reconstruct each slide by editability tier. Do not stop at one transparent picture layer when the user asked for editable PPTX.

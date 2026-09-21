@@ -142,22 +142,22 @@
     .legend .dot-visual { background: var(--cyan); }
     .legend .dot-proof { background: var(--green); }
     .workflow-layout { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(310px, .68fr); gap: 26px; align-items: start; }
-    .stage-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
-    .stage-card { position: relative; min-height: 166px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: rgba(18,30,51,.64); cursor: pointer; transition: .22s ease; }
-    .stage-card:hover, .stage-card.is-active { border-color: rgba(110,231,249,.7); background: linear-gradient(145deg, rgba(28,52,79,.9), rgba(15,28,49,.9)); transform: translateY(-2px); }
-    .stage-card[hidden] { display: none; }
-    .stage-top { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
-    .stage-no { color: var(--cyan); font: 700 11px var(--font-mono); letter-spacing: .08em; }
-    .stage-kind { padding: 4px 7px; border-radius: 6px; color: #a9bfdc; background: rgba(126,154,191,.12); font: 10px var(--font-mono); }
-    .stage-card h3 { margin: 16px 0 7px; font-size: 18px; letter-spacing: -.025em; }
-    .stage-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
-    .stage-output { display: inline-flex; align-items: center; gap: 5px; margin-top: 15px; color: #b9cce4; font: 10px var(--font-mono); }
-    .stage-output::before { content: "↳"; color: var(--amber); font-size: 14px; }
-    .stage-detail { position: sticky; top: 98px; min-height: 508px; padding: 28px; border: 1px solid rgba(110,231,249,.28); border-radius: 20px; background: linear-gradient(160deg, #12213a, #0b1425); box-shadow: 0 22px 54px rgba(4,10,22,.25); }
+    .step-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .step-card { position: relative; min-height: 166px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: rgba(18,30,51,.64); cursor: pointer; transition: .22s ease; }
+    .step-card:hover, .step-card.is-active { border-color: rgba(110,231,249,.7); background: linear-gradient(145deg, rgba(28,52,79,.9), rgba(15,28,49,.9)); transform: translateY(-2px); }
+    .step-card[hidden] { display: none; }
+    .step-top { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+    .step-no { color: var(--cyan); font: 700 11px var(--font-mono); letter-spacing: .08em; }
+    .step-kind { padding: 4px 7px; border-radius: 6px; color: #a9bfdc; background: rgba(126,154,191,.12); font: 10px var(--font-mono); }
+    .step-card h3 { margin: 16px 0 7px; font-size: 18px; letter-spacing: -.025em; }
+    .step-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .step-output { display: inline-flex; align-items: center; gap: 5px; margin-top: 15px; color: #b9cce4; font: 10px var(--font-mono); }
+    .step-output::before { content: "↳"; color: var(--amber); font-size: 14px; }
+    .step-detail { position: sticky; top: 98px; min-height: 508px; padding: 28px; border: 1px solid rgba(110,231,249,.28); border-radius: 20px; background: linear-gradient(160deg, #12213a, #0b1425); box-shadow: 0 22px 54px rgba(4,10,22,.25); }
     .detail-index { display: flex; justify-content: space-between; align-items: center; color: var(--cyan); font: 700 11px var(--font-mono); letter-spacing: .12em; }
     .detail-index span:last-child { color: var(--green); }
-    .stage-detail h3 { margin: 28px 0 12px; font-size: 30px; line-height: 1.1; letter-spacing: -.04em; }
-    .stage-detail > p { margin: 0; color: #b6c8df; font-size: 15px; line-height: 1.8; }
+    .step-detail h3 { margin: 28px 0 12px; font-size: 30px; line-height: 1.1; letter-spacing: -.04em; }
+    .step-detail > p { margin: 0; color: #b6c8df; font-size: 15px; line-height: 1.8; }
     .detail-block { margin-top: 29px; padding-top: 20px; border-top: 1px solid var(--line); }
     .detail-block h4 { margin: 0 0 11px; color: #e8f1ff; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
     .detail-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
@@ -230,7 +230,7 @@
       .hero__grid, .editability-intro, .release-grid { grid-template-columns: 1fr; gap: 46px; }
       .hero__visual { min-height: 460px; }
       .workflow-layout { grid-template-columns: 1fr; }
-      .stage-detail { position: relative; top: 0; min-height: unset; }
+      .step-detail { position: relative; top: 0; min-height: unset; }
       .adv-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
       .sources__inner { flex-direction: column; }
       .source-links { justify-content: flex-start; }
@@ -254,8 +254,8 @@
       .section-head p { margin-top: 16px; }
       .workflow-toolbar { display: block; }
       .legend { margin-top: 16px; }
-      .stage-list, .pain-grid, .adv-grid { grid-template-columns: 1fr; }
-      .stage-card { min-height: unset; }
+      .step-list, .pain-grid, .adv-grid { grid-template-columns: 1fr; }
+      .step-card { min-height: unset; }
       .pain-toggle { margin-top: 20px; width: fit-content; }
       .route-row { grid-template-columns: 1fr; gap: 7px; }
       .route-row--head { display: none; }
@@ -345,70 +345,70 @@
           </div>
         </div>
         <div class="workflow-layout">
-          <div class="stage-list" id="stageList">
-            <article class="stage-card" data-stage="0" data-category="content">
-              <div class="stage-top"><span class="stage-no">STAGE 00</span><span class="stage-kind">CONTENT</span></div>
+          <div class="step-list" id="stepList">
+            <article class="step-card" data-step="0" data-category="content">
+              <div class="step-top"><span class="step-no">STEP 00</span><span class="step-kind">CONTENT</span></div>
               <h3>预检与 Run Identity</h3>
               <p>检查来源、工具能力、空间和上一次 accepted round，建立独立运行目录。</p>
-              <span class="stage-output">preflight report / run folder</span>
+              <span class="step-output">preflight report / run folder</span>
             </article>
-            <article class="stage-card is-active" data-stage="1" data-category="content">
-              <div class="stage-top"><span class="stage-no">STAGE 01</span><span class="stage-kind">CONTENT</span></div>
+            <article class="step-card is-active" data-step="1" data-category="content">
+              <div class="step-top"><span class="step-no">STEP 01</span><span class="step-kind">CONTENT</span></div>
               <h3>内容真值与证据地图</h3>
               <p>把每个主张、数字、公式、表格值绑定到来源，生成 Slide Manifest 和白名单。</p>
-              <span class="stage-output">evidence manifest / exact-text whitelist</span>
+              <span class="step-output">evidence manifest / exact-text whitelist</span>
             </article>
-            <article class="stage-card" data-stage="2" data-category="visual">
-              <div class="stage-top"><span class="stage-no">STAGE 02</span><span class="stage-kind">VISUAL</span></div>
+            <article class="step-card" data-step="2" data-category="visual">
+              <div class="step-top"><span class="step-no">STEP 02</span><span class="step-kind">VISUAL</span></div>
               <h3>叙事与 Style Contract</h3>
               <p>锁定结论式标题、页面原型、密度、颜色、字体和负面约束。</p>
-              <span class="stage-output">slide brief / profile / prompt plan</span>
+              <span class="step-output">slide brief / profile / prompt plan</span>
             </article>
-            <article class="stage-card" data-stage="3" data-category="visual">
-              <div class="stage-top"><span class="stage-no">STAGE 03</span><span class="stage-kind">VISUAL</span></div>
+            <article class="step-card" data-step="3" data-category="visual">
+              <div class="step-top"><span class="step-no">STEP 03</span><span class="step-kind">VISUAL</span></div>
               <h3>一页一提示的 ImageGen 母版</h3>
               <p>每页生成一个完整视觉页面，保存 prompt、hash、slide ID 和内建 ImageGen provenance。</p>
-              <span class="stage-output">ig_… / validated exec-… / slide master PNG</span>
+              <span class="step-output">ig_… / validated exec-… / slide master PNG</span>
             </article>
-            <article class="stage-card" data-stage="4" data-category="visual">
-              <div class="stage-top"><span class="stage-no">STAGE 04</span><span class="stage-kind">VISUAL</span></div>
+            <article class="step-card" data-step="4" data-category="visual">
+              <div class="step-top"><span class="step-no">STEP 04</span><span class="step-kind">VISUAL</span></div>
               <h3>Image-only 证明</h3>
               <p>先组装图片版 PPTX，确认每页只有一张完整图片，证明视觉母版本身成立。</p>
-              <span class="stage-output">image-only PPTX / first-gate report</span>
+              <span class="step-output">image-only PPTX / first-gate report</span>
             </article>
-            <article class="stage-card" data-stage="5" data-category="proof">
-              <div class="stage-top"><span class="stage-no">STAGE 05</span><span class="stage-kind">REBUILD</span></div>
+            <article class="step-card" data-step="5" data-category="proof">
+              <div class="step-top"><span class="step-no">STEP 05</span><span class="step-kind">REBUILD</span></div>
               <h3>视觉解析与语义路由</h3>
               <p>按对象而不是按像素拆解，记录 source / cleanup / layout 三套几何。</p>
-              <span class="stage-output">component manifest / routing decisions</span>
+              <span class="step-output">component manifest / routing decisions</span>
             </article>
-            <article class="stage-card" data-stage="6" data-category="proof">
-              <div class="stage-top"><span class="stage-no">STAGE 06</span><span class="stage-kind">REBUILD</span></div>
+            <article class="step-card" data-step="6" data-category="proof">
+              <div class="step-top"><span class="step-no">STEP 06</span><span class="step-kind">REBUILD</span></div>
               <h3>可编辑 PPTX 组合</h3>
               <p>普通文字和简单几何原生化，复杂艺术保留为 bounded asset，背景保持连续。</p>
-              <span class="stage-output">editable PPTX / compose report</span>
+              <span class="step-output">editable PPTX / compose report</span>
             </article>
-            <article class="stage-card" data-stage="7" data-category="proof">
-              <div class="stage-top"><span class="stage-no">STAGE 07</span><span class="stage-kind">QA</span></div>
+            <article class="step-card" data-step="7" data-category="proof">
+              <div class="step-top"><span class="step-no">STEP 07</span><span class="step-kind">QA</span></div>
               <h3>技术门禁与 Office 导出</h3>
               <p>做 ZIP、布局、溢出、文字、图层契约检查，并用 Microsoft PowerPoint 真实导出。</p>
-              <span class="stage-output">exact-text / layer / Office reports</span>
+              <span class="step-output">exact-text / layer / Office reports</span>
             </article>
-            <article class="stage-card" data-stage="8" data-category="proof">
-              <div class="stage-top"><span class="stage-no">STAGE 08</span><span class="stage-kind">QA</span></div>
+            <article class="step-card" data-step="8" data-category="proof">
+              <div class="step-top"><span class="step-no">STEP 08</span><span class="step-kind">QA</span></div>
               <h3>逐页全尺寸视觉审查</h3>
               <p>对比 source、preview、side-by-side、blend 和 heatmap，检查残留、层级和完成度。</p>
-              <span class="stage-output">visual-review manifest / montage</span>
+              <span class="step-output">visual-review manifest / montage</span>
             </article>
-            <article class="stage-card" data-stage="9" data-category="proof">
-              <div class="stage-top"><span class="stage-no">STAGE 09</span><span class="stage-kind">RELEASE</span></div>
+            <article class="step-card" data-step="9" data-category="proof">
+              <div class="step-top"><span class="step-no">STEP 09</span><span class="step-kind">RELEASE</span></div>
               <h3>不可变发布与经验回灌</h3>
               <p>只合并被修复的弱页，保留已验收基线，把根因和证据写回 ledger。</p>
-              <span class="stage-output">Gold release / improvement ledger</span>
+              <span class="step-output">Gold release / improvement ledger</span>
             </article>
           </div>
-          <aside class="stage-detail" id="stageDetail" aria-live="polite">
-            <div class="detail-index"><span id="detailIndex">STAGE 01 / CONTENT TRUTH</span><span id="detailState">GATE REQUIRED</span></div>
+          <aside class="step-detail" id="stepDetail" aria-live="polite">
+            <div class="detail-index"><span id="detailIndex">STEP 01 / CONTENT TRUTH</span><span id="detailState">GATE REQUIRED</span></div>
             <h3 id="detailTitle">内容真值与证据地图</h3>
             <p id="detailLead">先回答“这句话从哪里来”，再讨论“这页怎么好看”。所有可见事实、数字、公式和表格值都要能回到 reviewed source。</p>
             <div class="detail-block">
@@ -529,20 +529,20 @@
   <footer><div class="wrap"><span>AUTOPPT / WORKFLOW SHOWCASE</span><span>Source → ImageGen Master → Semantic Reconstruction → Gold Release</span></div></footer>
 
   <script>
-    const stageData = {
-      0: { index: 'STAGE 00 / PREFLIGHT', state: 'GATE REQUIRED', title: '预检与 Run Identity', lead: '生成之前先确认环境和边界：来源、工具、空间、上一轮 accepted round，以及本次交付等级。', list: ['独立 run folder 与不可覆盖的 accepted baseline', 'ImageGen、OCR、Node/PptxGenJS、vector、PowerPoint 能力检查', 'Windows Office 渲染使用任务级 TEMP / TMP 空间'], code: 'preflight → capabilities → isolated run folder' },
-      1: { index: 'STAGE 01 / CONTENT TRUTH', state: 'GATE REQUIRED', title: '内容真值与证据地图', lead: '先回答“这句话从哪里来”，再讨论“这页怎么好看”。所有可见事实、数字、公式和表格值都要能回到 reviewed source。', list: ['稳定的 evidence ID 与 source boundary', 'Slide Manifest、exact-text whitelist、numeric whitelist', '没有来源或冲突的主张被标记为 blocked'], code: 'Slide Manifest → reviewed source → exact text / numbers' },
-      2: { index: 'STAGE 02 / VISUAL CONTRACT', state: 'GATE REQUIRED', title: '叙事与 Style Contract', lead: '把内容变成可生成的视觉约束：每页一个结论、一个主证据锚点，以及可复用但不僵化的页面节奏。', list: ['结论式标题与 page archetype', '颜色、字号、密度、CJK 约束与 negative constraints', '一页一份 self-contained prompt，禁止空背景再补卡片'], code: 'slide brief + style profile + prompt manifest' },
-      3: { index: 'STAGE 03 / VISUAL MASTER', state: 'PROVENANCE LOCKED', title: '一页一提示的 ImageGen 母版', lead: '每张 slide 先生成一个完整页面，保留视觉作者性。代码只负责接收、记录和后续组合，不替代首阶段视觉生产。', list: ['内建 ImageGen 完整页面输出', '记录 prompt、slide ID、输出路径、hash 与 ig_… / 已验证 exec-… provenance', '坏页只重生成坏页；不把后置 overlay 当成视觉修复'], code: 'direct_final_slide_imagegen → built-in provenance → current image hash' },
-      4: { index: 'STAGE 04 / IMAGE-ONLY PROOF', state: 'BLOCKING GATE', title: 'Image-only 证明', lead: '在谈编辑性之前，先证明视觉母版本身成立：图片版 PPTX 每页只有一张完整图片，没有脚本补上的文字或形状。', list: ['PPTX 页数、图片数和 manifest 对齐', 'image-only slide 的 text_boxes = 0、native_shapes = 0', '视觉内容、文字形状、证据锚点先完成全页检查'], code: 'imagegen-first-gate-report.json → image-only PPTX' },
-      5: { index: 'STAGE 05 / SEMANTIC ROUTING', state: 'REVIEWED ROUTE', title: '视觉解析与语义路由', lead: '不按像素追踪整页，而是先判断对象是什么、是否值得编辑、如何在不损伤背景的前提下取出。', list: ['component manifest：type、content_id、bbox、z-order、confidence', 'source_bbox / cleanup mask / layout_bbox 三套几何分工', '每个 rejected vector 都有 concrete reason 与 fallback'], code: 'verified master → component manifest → routing decisions' },
-      6: { index: 'STAGE 06 / EDITABLE COMPOSE', state: 'LAYER CONTRACT', title: '可编辑 PPTX 组合', lead: '可编辑不等于每个像素都变成 path。让最常改的文字和几何原生化，让复杂艺术保持高保真且可移动。', list: ['审核后的 measured plan：source_bbox 与 layout_bbox 分开', '普通文字 → native text；框线、箭头、节点 → native shape', '孤立扁平图标 → bounded OOXML freeform；复杂科学图像 → movable raster', '原生纯色背景也可作为连续背景；隐藏前景后不能留下语义残留'], code: 'measured plan → native text/shapes + bounded freeforms/assets + continuous background' },
-      7: { index: 'STAGE 07 / TECHNICAL QA', state: 'OFFICE REQUIRED', title: '技术门禁与 Office 导出', lead: '结构检查只是中间证据。最终必须由真实 Microsoft PowerPoint 打开并导出 exact final PPTX，再把渲染结果送入对比。', list: ['ZIP / slide count / layout / overflow / editability', 'exact-text 100%，replacement characters = 0', 'PowerPoint export 的引擎、字体、HRESULT 或成功证据被记录'], code: 'structural gates → PowerPoint export → comparison artifacts' },
-      8: { index: 'STAGE 08 / VISUAL SIGN-OFF', state: 'HUMAN / MODEL REVIEW', title: '逐页全尺寸视觉审查', lead: '把 source、preview、side-by-side、blend、heatmap 放在一起，检查那些结构指标捕捉不到的像素问题和设计问题。', list: ['残留字、重复文字、CJK 换行与强调色', '卡片边缘、分隔点、图表标签、SVG 轮廓与裁切', 'spectacle control 与 design completion 双向审查'], code: 'source + preview + side-by-side + blend + heatmap' },
-      9: { index: 'STAGE 09 / IMMUTABLE RELEASE', state: 'GOLD AGGREGATE', title: '不可变发布与经验回灌', lead: '发布的是一组可复核的证据，而不是一个孤立文件。局部改进生成新 round，已通过的页面继续被继承。', list: ['release_gate aggregate verdict = pass', 'accepted round、hash、报告、拒绝变体一起保存', '失败模式、根因、修复和证据写回 improvement ledger'], code: 'new round → baseline merge → release gate → ledger' }
+    const stepData = {
+      0: { index: 'STEP 00 / PREFLIGHT', state: 'GATE REQUIRED', title: '预检与 Run Identity', lead: '生成之前先确认环境和边界：来源、工具、空间、上一轮 accepted round，以及本次交付等级。', list: ['独立 run folder 与不可覆盖的 accepted baseline', 'ImageGen、OCR、Node/PptxGenJS、vector、PowerPoint 能力检查', 'Windows Office 渲染使用任务级 TEMP / TMP 空间'], code: 'preflight → capabilities → isolated run folder' },
+      1: { index: 'STEP 01 / CONTENT TRUTH', state: 'GATE REQUIRED', title: '内容真值与证据地图', lead: '先回答“这句话从哪里来”，再讨论“这页怎么好看”。所有可见事实、数字、公式和表格值都要能回到 reviewed source。', list: ['稳定的 evidence ID 与 source boundary', 'Slide Manifest、exact-text whitelist、numeric whitelist', '没有来源或冲突的主张被标记为 blocked'], code: 'Slide Manifest → reviewed source → exact text / numbers' },
+      2: { index: 'STEP 02 / VISUAL CONTRACT', state: 'GATE REQUIRED', title: '叙事与 Style Contract', lead: '把内容变成可生成的视觉约束：每页一个结论、一个主证据锚点，以及可复用但不僵化的页面节奏。', list: ['结论式标题与 page archetype', '颜色、字号、密度、CJK 约束与 negative constraints', '一页一份 self-contained prompt，禁止空背景再补卡片'], code: 'slide brief + style profile + prompt manifest' },
+      3: { index: 'STEP 03 / VISUAL MASTER', state: 'PROVENANCE LOCKED', title: '一页一提示的 ImageGen 母版', lead: '每张 slide 先生成一个完整页面，保留视觉作者性。代码只负责接收、记录和后续组合，不替代首阶段视觉生产。', list: ['内建 ImageGen 完整页面输出', '记录 prompt、slide ID、输出路径、hash 与 ig_… / 已验证 exec-… provenance', '坏页只重生成坏页；不把后置 overlay 当成视觉修复'], code: 'direct_final_slide_imagegen → built-in provenance → current image hash' },
+      4: { index: 'STEP 04 / IMAGE-ONLY PROOF', state: 'BLOCKING GATE', title: 'Image-only 证明', lead: '在谈编辑性之前，先证明视觉母版本身成立：图片版 PPTX 每页只有一张完整图片，没有脚本补上的文字或形状。', list: ['PPTX 页数、图片数和 manifest 对齐', 'image-only slide 的 text_boxes = 0、native_shapes = 0', '视觉内容、文字形状、证据锚点先完成全页检查'], code: 'imagegen-first-gate-report.json → image-only PPTX' },
+      5: { index: 'STEP 05 / SEMANTIC ROUTING', state: 'REVIEWED ROUTE', title: '视觉解析与语义路由', lead: '不按像素追踪整页，而是先判断对象是什么、是否值得编辑、如何在不损伤背景的前提下取出。', list: ['component manifest：type、content_id、bbox、z-order、confidence', 'source_bbox / cleanup mask / layout_bbox 三套几何分工', '每个 rejected vector 都有 concrete reason 与 fallback'], code: 'verified master → component manifest → routing decisions' },
+      6: { index: 'STEP 06 / EDITABLE COMPOSE', state: 'LAYER CONTRACT', title: '可编辑 PPTX 组合', lead: '可编辑不等于每个像素都变成 path。让最常改的文字和几何原生化，让复杂艺术保持高保真且可移动。', list: ['审核后的 measured plan：source_bbox 与 layout_bbox 分开', '普通文字 → native text；框线、箭头、节点 → native shape', '孤立扁平图标 → bounded OOXML freeform；复杂科学图像 → movable raster', '原生纯色背景也可作为连续背景；隐藏前景后不能留下语义残留'], code: 'measured plan → native text/shapes + bounded freeforms/assets + continuous background' },
+      7: { index: 'STEP 07 / TECHNICAL QA', state: 'OFFICE REQUIRED', title: '技术门禁与 Office 导出', lead: '结构检查只是中间证据。最终必须由真实 Microsoft PowerPoint 打开并导出 exact final PPTX，再把渲染结果送入对比。', list: ['ZIP / slide count / layout / overflow / editability', 'exact-text 100%，replacement characters = 0', 'PowerPoint export 的引擎、字体、HRESULT 或成功证据被记录'], code: 'structural gates → PowerPoint export → comparison artifacts' },
+      8: { index: 'STEP 08 / VISUAL SIGN-OFF', state: 'HUMAN / MODEL REVIEW', title: '逐页全尺寸视觉审查', lead: '把 source、preview、side-by-side、blend、heatmap 放在一起，检查那些结构指标捕捉不到的像素问题和设计问题。', list: ['残留字、重复文字、CJK 换行与强调色', '卡片边缘、分隔点、图表标签、SVG 轮廓与裁切', 'spectacle control 与 design completion 双向审查'], code: 'source + preview + side-by-side + blend + heatmap' },
+      9: { index: 'STEP 09 / IMMUTABLE RELEASE', state: 'GOLD AGGREGATE', title: '不可变发布与经验回灌', lead: '发布的是一组可复核的证据，而不是一个孤立文件。局部改进生成新 round，已通过的页面继续被继承。', list: ['release_gate aggregate verdict = pass', 'accepted round、hash、报告、拒绝变体一起保存', '失败模式、根因、修复和证据写回 improvement ledger'], code: 'new round → baseline merge → release gate → ledger' }
     };
 
-    const cards = [...document.querySelectorAll('.stage-card')];
+    const cards = [...document.querySelectorAll('.step-card')];
     const detailIndex = document.querySelector('#detailIndex');
     const detailState = document.querySelector('#detailState');
     const detailTitle = document.querySelector('#detailTitle');
@@ -550,11 +550,11 @@
     const detailList = document.querySelector('#detailList');
     const detailCode = document.querySelector('#detailCode');
 
-    function selectStage(id) {
-      const data = stageData[id];
+    function selectStep(id) {
+      const data = stepData[id];
       if (!data) return;
       cards.forEach(card => {
-        const active = card.dataset.stage === String(id);
+        const active = card.dataset.step === String(id);
         card.classList.toggle('is-active', active);
         card.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
@@ -569,11 +569,11 @@
     cards.forEach(card => {
       card.setAttribute('role', 'button');
       card.setAttribute('tabindex', '0');
-      card.addEventListener('click', () => selectStage(card.dataset.stage));
+      card.addEventListener('click', () => selectStep(card.dataset.step));
       card.addEventListener('keydown', event => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          selectStage(card.dataset.stage);
+          selectStep(card.dataset.step);
         }
       });
     });
@@ -588,7 +588,7 @@
         });
         cards.forEach(card => { card.hidden = filter !== 'all' && card.dataset.category !== filter; });
         const activeCard = cards.find(card => !card.hidden);
-        if (activeCard) selectStage(activeCard.dataset.stage);
+        if (activeCard) selectStep(activeCard.dataset.step);
       });
     });
 
@@ -606,7 +606,7 @@
     }
     painButtons.forEach(button => button.addEventListener('click', () => setPainView(button.dataset.painView)));
     setPainView('why');
-    selectStage('1');
+    selectStep('1');
   </script>
 </body>
 </html>

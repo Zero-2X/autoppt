@@ -61,7 +61,7 @@ def iter_source_files(topic_dir: Path) -> Iterable[Path]:
                 continue
             # Generated slide images and temporary render files are tracked via
             # slide/image manifests, not duplicated into the source audit.
-            if "stage45_workspace" in path.parts and ("assets" in path.parts or "pptx" in path.parts):
+            if "imagegen_workspace" in path.parts and ("assets" in path.parts or "pptx" in path.parts):
                 continue
             resolved = path.resolve()
             if resolved not in seen:

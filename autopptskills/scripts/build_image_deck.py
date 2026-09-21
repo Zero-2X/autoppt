@@ -26,12 +26,12 @@ def validate_spec(spec: dict[str, Any], spec_base: Path) -> list[Path]:
     generation_mode = deck.get("generation_mode")
     if output_mode != REQUIRED_OUTPUT_MODE:
         raise ValueError(
-            "Stage 4.5 is imagegen-only. deck.output_mode must be "
+            "ImageGen assembly is imagegen-only. deck.output_mode must be "
             f"{REQUIRED_OUTPUT_MODE!r}; got {output_mode!r}."
         )
     if generation_mode != REQUIRED_GENERATION_MODE:
         raise ValueError(
-            "Stage 4.5 is imagegen-only. deck.generation_mode must be "
+            "ImageGen assembly is imagegen-only. deck.generation_mode must be "
             f"{REQUIRED_GENERATION_MODE!r}; got {generation_mode!r}."
         )
 
@@ -44,7 +44,7 @@ def validate_spec(spec: dict[str, Any], spec_base: Path) -> list[Path]:
         slide_id = item.get("slide_id", "<unknown>")
         if item.get("layout") != "full_slide_image":
             raise ValueError(
-                "Stage 4.5 PPT assembly accepts only complete imagegen slides. "
+                "ImageGen assembly PPT assembly accepts only complete imagegen slides. "
                 f"Slide {slide_id} must use layout='full_slide_image'."
             )
         slide_image = item.get("slide_image")
@@ -57,11 +57,11 @@ def validate_spec(spec: dict[str, Any], spec_base: Path) -> list[Path]:
     if missing:
         missing_list = "\n".join(f"- {path}" for path in missing)
         raise FileNotFoundError(
-            "Missing generated full-slide image(s). Stage 4.5 has no alternate PPT route, "
+            "Missing generated full-slide image(s). ImageGen assembly has no alternate PPT route, "
             "no local text overlay path, and no diagnostic shell build.\n"
             f"{missing_list}\n"
             "Invoke Codex built-in image_gen for every pending slide, ingest the handoff, "
-            "then run scripts/run_competition_imagegen.py and this builder again."
+            "then run scripts/register_imagegen_outputs.py and this builder again."
         )
 
     return [rel_path(spec_base, item["slide_image"]) for item in slides]
@@ -98,9 +98,9 @@ def build_ppt(spec_path: Path, output_path: Path) -> dict[str, Any]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Assemble a Stage 4.5 imagegen-only PPTX from generated full-slide images."
+        description="Assemble an ImageGen image-only PPTX from generated full-slide images."
     )
-    parser.add_argument("deck_spec", help="Path to project/stage4_competition_ppt_generation/deck-spec.json")
+    parser.add_argument("deck_spec", help="Path to project/imagegen_ppt_generation/deck-spec.json")
     parser.add_argument("--output", required=True, help="Output PPTX path.")
     parser.add_argument("--report", default="", help="Optional JSON build report path.")
     return parser

@@ -289,7 +289,7 @@ def has_full_slide_prompt_contract(slide: dict[str, Any]) -> bool:
         str(slide.get(key, "")) for key in ("prompt_zh", "prompt_en", "prompt")
     ).lower()
     chinese_complete_page_contract = "生成一张完整、最终可用的中文powerpoint幻灯片图片" in prompt
-    # Older onlyppt prompt packs already used an explicit Chinese 16:9
+    # Earlier prompt packs already used an explicit Chinese 16:9
     # complete-slide contract but did not duplicate it into expected_output.
     # Preserve those manifests instead of forcing a prompt rewrite or a new
     # ImageGen call; the top-level prompt policy still carries the hard
@@ -512,7 +512,7 @@ def run_gate(args: argparse.Namespace) -> dict[str, Any]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("run_dir", help="Run/stage directory containing deck-spec.json and image-prompts.json.")
+    parser.add_argument("run_dir", help="ImageGen workspace containing deck-spec.json and image-prompts.json.")
     parser.add_argument("--pptx", required=True, help="Image-only PPTX to inspect.")
     parser.add_argument("--deck-spec", default="", help="Override deck-spec.json path, relative to run_dir.")
     parser.add_argument("--prompt-manifest", default="", help="Override image-prompts.json path, relative to run_dir.")

@@ -9,15 +9,15 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from stage45_adapter import run_ppt  # noqa: E402
+    from ppt_adapter import run_ppt  # noqa: E402
     from style_contracts import style_profile_choices  # noqa: E402
 else:
-    from .stage45_adapter import run_ppt
+    from .ppt_adapter import run_ppt
     from ..style_contracts import style_profile_choices
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run AutoSearch PPT PPT/imagegen adapter.")
+    parser = argparse.ArgumentParser(description="Run the AutoPPT Workflow PPT/ImageGen adapter.")
     parser.add_argument("topic_dir", help="Topic directory, such as sample/topic_xx")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--mock", action="store_true", help="Structural smoke only; always blocked from formal delivery.")

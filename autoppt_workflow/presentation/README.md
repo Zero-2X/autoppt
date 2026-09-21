@@ -1,7 +1,7 @@
 # Presentation Orchestrator
 
 This package adds a source-grounded presentation layer around the existing
-PPT/Stage4.5 pipeline. It does not replace the ImageGen runner or the
+PPT/ImageGen assembly pipeline. It does not replace the ImageGen runner or the
 PowerPoint builders.
 
 The stable route is:
@@ -67,7 +67,7 @@ for `native_text`, measured simple geometry routes to native shapes/connectors,
 and complex visuals remain `svg_group` or `raster_asset`. It does not replace
 the ImageGen-first provenance gate or the existing release gates.
 
-The files are additive and safe to create on resume. Existing Stage8 workbook,
+The files are additive and safe to create on resume. Existing presentation handoff workbook,
 PDF, `imagegen_prompts.json`, `images/`, `final_deck.pptx`, and `ppt_audit.json`
 remain available under their original paths.
 
@@ -94,7 +94,7 @@ accept/reject -> append project history and reusable lessons
 Run it explicitly with:
 
 ```powershell
-python autosearch/scripts/iterate_presentation_quality.py `
+python autoppt_workflow/scripts/iterate_presentation_quality.py `
   --pptx <exact-delivery.pptx> --auto-repair --max-iterations 3
 ```
 

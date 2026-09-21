@@ -7,19 +7,12 @@ from pathlib import Path
 from typing import Any
 
 
-def repo_root(start: Path) -> Path:
-    for path in [start.resolve(), *start.resolve().parents]:
-        if (path / ".git").exists():
-            return path
-    return start.resolve()
-
-
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def build_deck_spec(stage45_dir: Path, image_prompts: dict[str, Any]) -> Path:
+def build_deck_spec(workspace_dir: Path, image_prompts: dict[str, Any]) -> Path:
     slides = []
     for slide in image_prompts.get("slides", []):
         slides.append(
@@ -41,22 +34,24 @@ def build_deck_spec(stage45_dir: Path, image_prompts: dict[str, Any]) -> Path:
             "presentation_profile": image_prompts.get("presentation_profile", "innovation_competition_defense"),
             "imagegen_route": image_prompts.get("imagegen_route", "fullpage_imagegen_reconstruct"),
             "slide_contract_schema": image_prompts.get("slide_contract_schema", "slide-ir-v1"),
-            "assembly_note": "AutoSearch PPT adapter; full-slide image assembly.",
+            "assembly_note": "AutoPPT Workflow adapter; full-slide image assembly.",
         },
         "slides": slides,
     }
-    path = stage45_dir / "deck-spec.json"
+    path = workspace_dir / "deck-spec.json"
     write_json(path, deck_spec)
     return path
 
 
-def build_pptx_with_stage45_builder(stage45_dir: Path, output_path: Path, report_path: Path) -> None:
-    root = repo_root(Path(__file__))
-    builder = root / "research-workflow-pipeline" / "scripts" / "build_competition_ppt.py"
+def build_pptx(workspace_dir: Path, output_path: Path, report_path: Path) -> None:
+    root = Path(__file__).resolve().parents[2]
+    builder = root / "autopptskills" / "scripts" / "build_image_deck.py"
+    if not builder.exists():
+        raise FileNotFoundError(f"bundled PPTX builder not found: {builder}")
     cmd = [
         sys.executable,
         str(builder),
-        str(stage45_dir / "deck-spec.json"),
+        str(workspace_dir / "deck-spec.json"),
         "--output",
         str(output_path),
         "--report",

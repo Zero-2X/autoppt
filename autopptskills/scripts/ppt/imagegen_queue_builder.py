@@ -4,10 +4,10 @@ from pathlib import Path
 from typing import Any
 
 
-def build_generation_queue(stage45_dir: Path, image_prompts: dict[str, Any], *, mock: bool) -> list[dict[str, Any]]:
+def build_generation_queue(workspace_dir: Path, image_prompts: dict[str, Any], *, mock: bool) -> list[dict[str, Any]]:
     queue: list[dict[str, Any]] = []
     for slide in image_prompts.get("slides", []):
-        final_path = stage45_dir / slide.get("final_path", f"assets/slides/{slide.get('slide_id')}.png")
+        final_path = workspace_dir / slide.get("final_path", f"assets/slides/{slide.get('slide_id')}.png")
         queue.append(
             {
                 "slide_id": slide.get("slide_id"),
