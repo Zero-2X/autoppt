@@ -5,6 +5,7 @@ slides and exact PowerPoint comparison evidence stay in ignored run folders.
 
 | Asset | Purpose | Privacy treatment |
 | --- | --- | --- |
+| `readme-banner.svg` | Project header with native line icons and capability labels | Generic artwork, no private data |
 | `workflow-overview.svg` | Generic workflow diagram | No project identities or private data |
 | `thesis-defense-cover.png` | Academic cover layout | Title, subtitle, author, institution and advisor obscured |
 | `semantic-pipeline-slide.png` | Information-rich content layout | Research-specific heading and explanatory paragraphs obscured |

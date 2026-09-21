@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
+  <title id="title">AutoPPT — 从资料到可编辑的精彩表达</title>
+  <desc id="desc">淡色底、深色标题与红色强调的项目横幅，展示文档、幻灯片与可编辑对象的线性图标。</desc>
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fbfaf8"/><stop offset="1" stop-color="#f0f3f6"/></linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1198" height="298" rx="22" fill="url(#paper)" stroke="#e3e6eb"/>
+  <path d="M42 49h35" stroke="#b4232d" stroke-width="5" stroke-linecap="round"/>
+  <g font-family="Segoe UI, Microsoft YaHei, Noto Sans SC, Arial, sans-serif">
+    <text x="42" y="130" font-size="68" font-weight="750" fill="#202936">Auto<tspan fill="#b4232d">PPT</tspan></text>
+    <text x="44" y="174" font-size="23" fill="#364152">从资料到可编辑的精彩表达</text>
+    <text x="44" y="205" font-size="15" fill="#697586">科研汇报 · 毕业答辩 · 项目评审</text>
+    <g transform="translate(42 236)">
+      <rect width="145" height="30" rx="15" fill="#f8e8e9"/>
+      <path d="M17 8v14m-7-7h14m-12-5 10 10m0-10L12 20" stroke="#b4232d" stroke-width="1.5"/>
+      <text x="33" y="20" font-size="12" font-weight="600" fill="#932029">ImageGen First</text>
+      <rect x="156" width="143" height="30" rx="15" fill="#e7edf4"/>
+      <path d="m168 20 2-6 8-7 4 4-8 8-6 1Z" fill="none" stroke="#475b75" stroke-width="1.4"/>
+      <text x="189" y="20" font-size="12" font-weight="600" fill="#344860">Editable PPTX</text>
+      <rect x="310" width="152" height="30" rx="15" fill="#e7efe9"/>
+      <path d="m322 15 4 4 8-9" fill="none" stroke="#42664e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="343" y="20" font-size="12" font-weight="600" fill="#365540">PowerPoint QA</text>
+    </g>
+    <g transform="translate(695 41)">
+      <rect x="28" y="0" width="412" height="218" rx="12" fill="#e5e9ed"/>
+      <rect x="14" y="12" width="412" height="218" rx="12" fill="#f3f5f7" stroke="#d5dce4"/>
+      <rect x="0" y="24" width="412" height="218" rx="12" fill="#fff" stroke="#cbd3dd"/>
+      <circle cx="22" cy="44" r="3" fill="#b4232d"/><circle cx="34" cy="44" r="3" fill="#d8dee6"/><circle cx="46" cy="44" r="3" fill="#d8dee6"/>
+      <path d="M16 57h380" stroke="#e5e9ef"/>
+      <rect x="26" y="75" width="184" height="47" rx="2" fill="#fcf6f6" stroke="#b4232d" stroke-dasharray="4 3"/>
+      <text x="39" y="106" font-size="26" font-weight="650" fill="#202936">Aa</text>
+      <path d="M90 92h94M90 106h72" stroke="#ccd4de" stroke-width="5" stroke-linecap="round"/>
+      <g fill="#fff" stroke="#b4232d"><rect x="23" y="72" width="6" height="6"/><rect x="207" y="72" width="6" height="6"/><rect x="23" y="119" width="6" height="6"/><rect x="207" y="119" width="6" height="6"/></g>
+      <path d="M30 149h157M30 164h133M30 179h145" stroke="#d7dee7" stroke-width="5" stroke-linecap="round"/>
+      <rect x="247" y="77" width="135" height="112" rx="8" fill="#f0f3f7"/>
+      <path d="M267 172v-28m27 28v-43m27 43V99m27 73v-58" stroke="#788ca5" stroke-width="12"/>
+      <path d="M321 172V99" stroke="#b4232d" stroke-width="12"/>
+      <text x="27" y="218" font-size="12" fill="#788492">SOURCE → DESIGN → EDIT → VERIFY</text>
+      <circle cx="383" cy="218" r="13" fill="#e7efe9"/><path d="m377 218 4 4 8-9" stroke="#42664e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>
